@@ -714,6 +714,36 @@
         .apanel-hdr-l { display: flex; align-items: center; gap: 8px; }
         .apanel-hdr-l i { color: var(--dp-color-dim); font-size: 16px; }
         .apanel-hdr h2 { font-size: 13px; font-weight: 500; color: var(--dp-color-bright); }
+        .apanel-hdr-r { display: flex; align-items: center; gap: 8px; }
+        .apanel-clear {
+            font-family: var(--dp-mono); font-size: 11px;
+            color: #e05252; background: rgba(224, 82, 82, 0.08);
+            border: 1px solid rgba(224, 82, 82, 0.25);
+            border-radius: var(--dp-r-pill);
+            padding: 4px 10px;
+            cursor: pointer; display: flex; align-items: center; gap: 5px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+        }
+        .apanel-clear:hover {
+            color: #ff6b6b; background: rgba(224, 82, 82, 0.18);
+            border-color: rgba(224, 82, 82, 0.5);
+            transform: translateY(-1px);
+            box-shadow: 0 0 10px rgba(224, 82, 82, 0.25);
+        }
+        .apanel-clear:active { transform: scale(0.96); }
+        .apanel-clear.confirming {
+            background: #e05252;
+            color: #ffffff;
+            border-color: #ff6b6b;
+            font-weight: 600;
+            animation: clearBtnPulse 1s ease-in-out infinite alternate;
+        }
+        @keyframes clearBtnPulse {
+            0% { box-shadow: 0 0 4px rgba(224, 82, 82, 0.4); }
+            100% { box-shadow: 0 0 14px rgba(224, 82, 82, 0.9); }
+        }
+
         .apanel-refresh {
             font-family: var(--dp-mono); font-size: 11px;
             color: var(--dp-color-meta); background: none; border: none;
@@ -1852,10 +1882,16 @@
                     <i class="ph-bold ph-warning"></i>
                     <h2>Alert Feed</h2>
                 </div>
-                <button onclick="refreshAlerts()" class="apanel-refresh" id="refreshBtn">
-                    <i class="ph ph-arrows-clockwise" style="font-size:13px"></i>
-                    <span>Refresh</span>
-                </button>
+                <div class="apanel-hdr-r">
+                    <button onclick="handleClearAlertsClick()" class="apanel-clear" id="clearAlertsBtn" title="Clear all alerts and reset KPI statistics">
+                        <i class="ph ph-trash" style="font-size:13px"></i>
+                        <span id="clearAlertsLabel">Clear Feed</span>
+                    </button>
+                    <button onclick="refreshAlerts()" class="apanel-refresh" id="refreshBtn">
+                        <i class="ph ph-arrows-clockwise" style="font-size:13px"></i>
+                        <span>Refresh</span>
+                    </button>
+                </div>
             </div>
 
             <div class="ftabs">
@@ -2031,6 +2067,46 @@
         fetchAlerts().finally(() => {
             setTimeout(() => btn.classList.remove('spin'), 600);
         });
+    }
+
+    let clearConfirmTimer = null;
+
+    /* Two-Step Animated Confirmation for Clearing Alerts & Resetting Metrics */
+    async function handleClearAlertsClick() {
+        const btn = document.getElementById('clearAlertsBtn');
+        const label = document.getElementById('clearAlertsLabel');
+        if (!btn || !label) return;
+
+        if (!btn.classList.contains('confirming')) {
+            // First click: Request confirmation
+            btn.classList.add('confirming');
+            label.innerText = 'Confirm Clear?';
+
+            clearTimeout(clearConfirmTimer);
+            clearConfirmTimer = setTimeout(() => {
+                btn.classList.remove('confirming');
+                label.innerText = 'Clear Feed';
+            }, 3500);
+            return;
+        }
+
+        // Second click: Confirmed - wipe alerts & reset stats
+        clearTimeout(clearConfirmTimer);
+        btn.classList.remove('confirming');
+        label.innerText = 'Clearing…';
+
+        try {
+            const res = await fetch('/api/alerts/clear', { method: 'POST' });
+            const data = await res.json();
+            currentAlerts = [];
+            renderAlerts();
+            await fetchStats();
+            showToast(`Cleared ${data.deleted_count} alerts · Total alerts reset to 0`, 'ok');
+        } catch (e) {
+            showToast('Failed to clear alerts', 'err');
+        } finally {
+            label.innerText = 'Clear Feed';
+        }
     }
 
     /* Filter Tabs */

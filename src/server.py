@@ -139,6 +139,19 @@ def get_alerts(
     alerts = db.get_alerts(limit=limit, offset=offset, status=status, severity=severity)
     return {"alerts": alerts, "count": len(alerts)}
 
+@app.post("/api/alerts/clear")
+def clear_all_alerts():
+    """Clear all stored alerts, reset total counts, and wipe cooldown trackers."""
+    deleted_count = db.clear_all_alerts()
+    from src.alerts import alert_manager
+    alert_manager.cooldown_tracker.clear()
+    alert_manager.persistence_tracker.clear()
+    return {
+        "status": "SUCCESS",
+        "deleted_count": deleted_count,
+        "message": f"Successfully cleared {deleted_count} alerts and reset KPI counters."
+    }
+
 @app.get("/api/alerts/{alert_id}")
 def get_alert_detail(alert_id: str):
     """Retrieve detailed record for a specific alert."""

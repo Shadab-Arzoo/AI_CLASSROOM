@@ -167,6 +167,17 @@ class Database:
                 "class_counts": class_counts
             }
 
+    def clear_all_alerts(self) -> int:
+        """Deletes all alert records, resets table sequence, and clears statistics."""
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM alerts")
+            count = cursor.fetchone()[0]
+            cursor.execute("DELETE FROM alerts")
+            cursor.execute("DELETE FROM sqlite_sequence WHERE name='alerts'")
+            conn.commit()
+            return count
+
 # Singleton instance
 db = Database()
 
