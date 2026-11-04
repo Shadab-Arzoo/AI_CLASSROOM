@@ -12,6 +12,7 @@ import numpy as np
 from src.config import CLASS_CONFIG, MIN_DETECTION_FRAMES
 from src.alerts import alert_manager
 from src.detector import compute_iou
+from src.policy import policy_manager
 
 class ObjectTracker:
     def __init__(self, detector):
@@ -103,33 +104,36 @@ class ObjectTracker:
                 # Majority class vote eliminates frame-to-frame label swapping
                 class_counts = Counter(old_trk["history"])
                 voted_class, _ = class_counts.most_common(1)[0]
-                config = CLASS_CONFIG.get(voted_class, CLASS_CONFIG.get(det["class_name"]))
+                eval_res = policy_manager.evaluate_item(voted_class)
 
                 # Update track state
                 old_trk["bbox"] = smoothed_box
                 old_trk["confidence"] = det["confidence"]
                 old_trk["class_name"] = voted_class
-                if config:
-                    old_trk["label"] = config["label"]
-                    old_trk["severity"] = config["severity"]
-                    old_trk["color"] = config["color"]
+                old_trk["label"] = eval_res["label"]
+                old_trk["severity"] = eval_res["severity"]
+                old_trk["color"] = eval_res["color"]
+                old_trk["allowed"] = eval_res["allowed"]
+                old_trk["enabled"] = eval_res["enabled"]
                 old_trk["frames_seen"] += 1
                 old_trk["lost_frames"] = 0
 
                 used_detections.add(d_idx)
                 used_tracks.add(t_idx)
 
-                det_with_track = {
-                    "track_id": trk_id,
-                    "bbox": smoothed_box,
-                    "class_name": voted_class,
-                    "label": old_trk["label"],
-                    "severity": old_trk["severity"],
-                    "color": old_trk["color"],
-                    "confidence": det["confidence"],
-                    "description": det.get("description", "")
-                }
-                matched_tracks.append(det_with_track)
+                if eval_res["enabled"]:
+                    det_with_track = {
+                        "track_id": trk_id,
+                        "bbox": smoothed_box,
+                        "class_name": voted_class,
+                        "label": eval_res["label"],
+                        "severity": eval_res["severity"],
+                        "allowed": eval_res["allowed"],
+                        "color": eval_res["color"],
+                        "confidence": det["confidence"],
+                        "description": det.get("description", "")
+                    }
+                    matched_tracks.append(det_with_track)
 
             unmatched_detections = [i for i in range(len(detections)) if i not in used_detections]
             unmatched_track_ids = [unmatched_track_ids[i] for i in range(len(unmatched_track_ids)) if i not in used_tracks]
@@ -137,25 +141,33 @@ class ObjectTracker:
         # 3. Create new tracks for unmatched detections
         for d_idx in unmatched_detections:
             det = detections[d_idx]
+            eval_res = policy_manager.evaluate_item(det["class_name"])
             new_id = self.next_track_id
             self.next_track_id += 1
 
             self.active_tracks[new_id] = {
                 "bbox": det["bbox"],
                 "class_name": det["class_name"],
-                "label": det["label"],
-                "severity": det["severity"],
+                "label": eval_res["label"],
+                "severity": eval_res["severity"],
+                "allowed": eval_res["allowed"],
+                "enabled": eval_res["enabled"],
                 "confidence": det["confidence"],
-                "color": det["color"],
+                "color": eval_res["color"],
                 "description": det.get("description", ""),
                 "history": [det["class_name"]],
                 "frames_seen": 1,
                 "lost_frames": 0
             }
 
-            det_with_track = dict(det)
-            det_with_track["track_id"] = new_id
-            matched_tracks.append(det_with_track)
+            if eval_res["enabled"]:
+                det_with_track = dict(det)
+                det_with_track["track_id"] = new_id
+                det_with_track["allowed"] = eval_res["allowed"]
+                det_with_track["color"] = eval_res["color"]
+                det_with_track["label"] = eval_res["label"]
+                det_with_track["severity"] = eval_res["severity"]
+                matched_tracks.append(det_with_track)
 
         # 4. Handle lost tracks (smoothing: keep showing temporarily if missed for a frame or two)
         for trk_id in list(unmatched_track_ids):
@@ -163,25 +175,29 @@ class ObjectTracker:
             if self.active_tracks[trk_id]["lost_frames"] > self.max_lost_frames:
                 del self.active_tracks[trk_id]
             elif self.active_tracks[trk_id]["frames_seen"] >= 2:
-                # Add smoothed track to visualization so box doesn't flicker away
+                # Add smoothed track to visualization if enabled by policy
                 lost_trk = self.active_tracks[trk_id]
-                matched_tracks.append({
-                    "track_id": trk_id,
-                    "class_name": lost_trk["class_name"],
-                    "label": lost_trk["label"],
-                    "severity": lost_trk["severity"],
-                    "confidence": lost_trk["confidence"],
-                    "bbox": lost_trk["bbox"],
-                    "color": lost_trk["color"],
-                    "description": lost_trk.get("description", "")
-                })
+                eval_res = policy_manager.evaluate_item(lost_trk["class_name"])
+                if eval_res["enabled"]:
+                    matched_tracks.append({
+                        "track_id": trk_id,
+                        "class_name": lost_trk["class_name"],
+                        "label": eval_res["label"],
+                        "severity": eval_res["severity"],
+                        "allowed": eval_res["allowed"],
+                        "confidence": lost_trk["confidence"],
+                        "bbox": lost_trk["bbox"],
+                        "color": eval_res["color"],
+                        "description": lost_trk.get("description", "")
+                    })
 
-        # 5. Filter confirmed tracks for alert triggers
+        # 5. Filter confirmed tracks for alert triggers (Only alert for PROHIBITED contraband!)
         confirmed_alerts = []
         for t in matched_tracks:
             trk_id = t.get("track_id")
             frames_seen = self.active_tracks.get(trk_id, {}).get("frames_seen", 1)
-            if frames_seen >= MIN_DETECTION_FRAMES:
+            # Authorized / allowed items (e.g. permitted calculator) NEVER trigger an alert
+            if frames_seen >= MIN_DETECTION_FRAMES and not t.get("allowed", False):
                 confirmed_alerts.append(t)
 
         # 6. Trigger alerts for prohibited items

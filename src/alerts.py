@@ -35,9 +35,13 @@ class AlertManager:
         new_alerts = []
 
         for det in detections:
+            # Authorized / permitted items must NEVER trigger violation alerts
+            if det.get("allowed", False):
+                continue
+
             severity = det.get("severity", "INFO")
-            # Only trigger alerts for suspicious/prohibited objects (HIGH and MEDIUM)
-            if severity not in ["HIGH", "MEDIUM"]:
+            # Only trigger alerts for prohibited / unauthorized objects
+            if severity not in ["HIGH", "MEDIUM", "PROHIBITED"]:
                 continue
 
             class_name = det["class_name"]

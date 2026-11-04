@@ -947,6 +947,321 @@
         }
 
         /* ═══════════════════════════════════════════════════
+           Exam Hall Policy & Permitted Items Section
+           ═══════════════════════════════════════════════════ */
+        .policy-panel {
+            background: var(--dp-color-panel);
+            border: var(--dp-border) solid var(--dp-color-hairline);
+            border-radius: var(--dp-r-panel);
+            padding: 22px 24px;
+            margin-bottom: var(--dp-gap);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+            position: relative;
+            overflow: hidden;
+            animation: revealUp 0.45s ease;
+        }
+        .policy-panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(63, 214, 198, 0.4), transparent);
+        }
+        .policy-hdr {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+        .policy-hdr-l {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .policy-icon-badge {
+            width: 40px; height: 40px;
+            border-radius: var(--dp-r-panel);
+            background: rgba(63, 214, 198, 0.08);
+            border: var(--dp-border) solid rgba(63, 214, 198, 0.25);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--dp-color-live);
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .policy-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .policy-title-row h3 {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--dp-color-bright);
+            letter-spacing: -0.01em;
+        }
+        .policy-pill {
+            font-family: var(--dp-mono);
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: var(--dp-r-pill);
+            background: rgba(63, 214, 198, 0.12);
+            color: var(--dp-color-live);
+            border: 1px solid rgba(63, 214, 198, 0.35);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+        .policy-desc {
+            font-size: 12px;
+            color: var(--dp-color-read);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        .hall-badge {
+            font-family: var(--dp-mono);
+            font-size: 11px;
+            color: var(--dp-color-meta);
+            background: var(--dp-color-ground);
+            border: 1px solid var(--dp-color-hairline);
+            padding: 5px 12px;
+            border-radius: var(--dp-r-pill);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Presets Bar */
+        .policy-presets-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 12px 16px;
+            background: var(--dp-color-ground);
+            border: 1px solid var(--dp-color-hairline);
+            border-radius: var(--dp-r-panel);
+            margin-bottom: 20px;
+        }
+        .presets-label {
+            font-family: var(--dp-mono);
+            font-size: 11px;
+            color: var(--dp-color-meta);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .presets-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .preset-btn {
+            font-family: var(--dp-face);
+            font-size: 12px;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: var(--dp-r-pill);
+            background: var(--dp-color-panel);
+            border: 1px solid var(--dp-color-hairline);
+            color: var(--dp-color-read);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .preset-btn:hover {
+            color: var(--dp-color-bright);
+            border-color: var(--dp-color-hairline-2);
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateY(-1px);
+        }
+        .preset-btn.active {
+            background: var(--dp-color-bright);
+            color: var(--dp-color-inverse-ink);
+            border-color: var(--dp-color-bright);
+            font-weight: 600;
+            box-shadow: 0 0 16px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Items Grid */
+        .policy-items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
+        }
+        .policy-card {
+            background: #090909;
+            border: 1px solid var(--dp-color-hairline);
+            border-radius: var(--dp-r-panel);
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 12px;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+        .policy-card:hover {
+            border-color: var(--dp-color-hairline-2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+        .policy-card.is-allowed {
+            border-left: 3px solid #3fd6c6;
+            background: linear-gradient(180deg, rgba(63, 214, 198, 0.04) 0%, #090909 100%);
+        }
+        .policy-card.is-prohibited {
+            border-left: 3px solid #e05252;
+            background: linear-gradient(180deg, rgba(224, 82, 82, 0.04) 0%, #090909 100%);
+        }
+        .policy-card.is-disabled {
+            opacity: 0.45;
+            filter: grayscale(0.8);
+        }
+        .pcard-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .pcard-icon {
+            width: 34px; height: 34px;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            background: var(--dp-color-panel);
+            border: 1px solid var(--dp-color-hairline);
+            color: var(--dp-color-bright);
+            transition: all 0.2s ease;
+        }
+        .policy-card.is-allowed .pcard-icon {
+            color: #3fd6c6;
+            border-color: rgba(63, 214, 198, 0.35);
+            background: rgba(63, 214, 198, 0.08);
+        }
+        .policy-card.is-prohibited .pcard-icon {
+            color: #e05252;
+            border-color: rgba(224, 82, 82, 0.35);
+            background: rgba(224, 82, 82, 0.08);
+        }
+        .pcard-info h4 {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--dp-color-bright);
+            margin-bottom: 2px;
+        }
+        .pcard-cat {
+            font-family: var(--dp-mono);
+            font-size: 10px;
+            color: var(--dp-color-meta);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .pcard-desc {
+            font-size: 11px;
+            color: var(--dp-color-meta);
+            line-height: 1.4;
+        }
+        .pcard-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 8px;
+        }
+        .pcard-tracking-tog {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--dp-mono);
+            font-size: 11px;
+            color: var(--dp-color-meta);
+            cursor: pointer;
+            user-select: none;
+        }
+        .pcard-tracking-tog input {
+            accent-color: var(--dp-color-live);
+            cursor: pointer;
+            width: 14px; height: 14px;
+        }
+        .pcard-perm-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .perm-badge {
+            font-family: var(--dp-mono);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: var(--dp-r-pill);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            letter-spacing: 0.02em;
+        }
+        .perm-badge.allowed {
+            background: rgba(63, 214, 198, 0.15);
+            color: #3fd6c6;
+            border: 1px solid rgba(63, 214, 198, 0.4);
+        }
+        .perm-badge.prohibited {
+            background: rgba(224, 82, 82, 0.15);
+            color: #e05252;
+            border: 1px solid rgba(224, 82, 82, 0.4);
+        }
+
+        /* Switch Toggle for Allowed vs Prohibited */
+        .perm-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+        .perm-switch input {
+            opacity: 0; width: 0; height: 0;
+        }
+        .perm-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: #201212;
+            border: 1px solid rgba(224, 82, 82, 0.4);
+            border-radius: var(--dp-r-pill);
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .perm-slider::before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background: #e05252;
+            border-radius: 50%;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .perm-switch input:checked + .perm-slider {
+            background: #0f241a;
+            border-color: rgba(63, 214, 198, 0.5);
+        }
+        .perm-switch input:checked + .perm-slider::before {
+            transform: translateX(22px);
+            background: #3fd6c6;
+            box-shadow: 0 0 8px rgba(63, 214, 198, 0.6);
+        }
+
+        /* ═══════════════════════════════════════════════════
            Toast Notifications
            ═══════════════════════════════════════════════════ */
         .toast-container {
@@ -1141,6 +1456,42 @@
                         <div class="tog-track"></div>
                         <span>ByteTrack</span>
                     </label>
+                </div>
+            </div>
+
+            <!-- ═══ Exam Hall Item Permissions & Policy Controls ═══ -->
+            <div class="policy-panel" id="examPolicySection">
+                <div class="policy-hdr">
+                    <div class="policy-hdr-l">
+                        <div class="policy-icon-badge">
+                            <i class="ph-bold ph-sliders-horizontal"></i>
+                        </div>
+                        <div>
+                            <div class="policy-title-row">
+                                <h3>Exam Hall Item Permissions &amp; Policy</h3>
+                                <span class="policy-pill" id="activePolicyBadge">Standard Theory Exam</span>
+                            </div>
+                            <p class="policy-desc" id="activePolicyDesc">
+                                Configure authorized vs. prohibited items in this room. Allowed items appear with a green reticle, while prohibited items immediately trigger alerts.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="policy-hdr-r">
+                        <span class="hall-badge"><i class="ph-bold ph-door"></i> <span id="policyHallLabel">ExamHall-Cam-01</span></span>
+                    </div>
+                </div>
+
+                <!-- Quick Presets Bar -->
+                <div class="policy-presets-bar">
+                    <span class="presets-label"><i class="ph-bold ph-lightning"></i> Hall Presets:</span>
+                    <div class="presets-group" id="presetsButtonGroup">
+                        <!-- Populated dynamically by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Items Grid with Interactive Toggles -->
+                <div class="policy-items-grid" id="policyItemsGrid">
+                    <!-- Populated dynamically by JavaScript -->
                 </div>
             </div>
 
@@ -1531,11 +1882,162 @@
     setInterval(fetchStats,  3000);
     setInterval(fetchStatus, 4000);
     setInterval(fetchAlerts, 2500);
+    setInterval(fetchPolicy, 6000);
+
+    /* ═══════════════════════════════════════════════════
+       Exam Hall Policy & Permitted Items Logic
+       ═══════════════════════════════════════════════════ */
+    let policyState = null;
+
+    /* Fetch Exam Hall Policy */
+    async function fetchPolicy() {
+        try {
+            const res = await fetch('/api/policy');
+            policyState = await res.json();
+            renderPolicy();
+        } catch (e) {
+            console.error("Failed to fetch exam policy", e);
+        }
+    }
+
+    /* Render Policy Section */
+    function renderPolicy() {
+        if (!policyState) return;
+
+        // Update badge and description
+        const badgeEl = document.getElementById('activePolicyBadge');
+        if (badgeEl) {
+            badgeEl.innerText = policyState.active_preset_badge || policyState.active_preset_name;
+        }
+        const descEl = document.getElementById('activePolicyDesc');
+        if (descEl) {
+            descEl.innerText = policyState.description || 'Configured examination room item restrictions.';
+        }
+
+        // Render Presets Bar
+        const presetsGroup = document.getElementById('presetsButtonGroup');
+        if (presetsGroup) {
+            presetsGroup.innerHTML = (policyState.presets || []).map(p => {
+                const isActive = (p.id === policyState.active_preset_id);
+                return `
+                    <button onclick="applyPreset('${p.id}')" class="preset-btn ${isActive ? 'active' : ''}">
+                        <i class="ph-bold ${isActive ? 'ph-check-circle' : 'ph-circle'}"></i>
+                        <span>${p.name.replace(/ \(.*\)/, '')}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        // Render Items Grid
+        const grid = document.getElementById('policyItemsGrid');
+        if (grid) {
+            grid.innerHTML = (policyState.items || []).map(item => {
+                const isAllowed = item.allowed;
+                const isEnabled = item.enabled;
+                const cardStateCls = !isEnabled ? 'is-disabled' : (isAllowed ? 'is-allowed' : 'is-prohibited');
+                const badgeCls = isAllowed ? 'allowed' : 'prohibited';
+                const badgeText = isAllowed ? 'ALLOWED' : 'PROHIBITED';
+                const badgeIcon = isAllowed ? 'ph-bold ph-check-circle' : 'ph-bold ph-prohibit';
+
+                return `
+                    <div class="policy-card ${cardStateCls}" id="pcard-${item.key}">
+                        <div class="pcard-header">
+                            <div class="pcard-icon">
+                                <i class="ph-bold ${item.icon || 'ph-cube'}"></i>
+                            </div>
+                            <div class="pcard-info">
+                                <h4>${item.label}</h4>
+                                <span class="pcard-cat">${item.category}</span>
+                            </div>
+                        </div>
+                        <p class="pcard-desc">${item.description}</p>
+                        <div class="pcard-footer">
+                            <label class="pcard-tracking-tog" title="Toggle AI detection for this item">
+                                <input type="checkbox" ${isEnabled ? 'checked' : ''} onchange="toggleItemTracking('${item.key}', this.checked)">
+                                <span>Look for item</span>
+                            </label>
+
+                            <div class="pcard-perm-control">
+                                <span class="perm-badge ${badgeCls}">
+                                    <i class="${badgeIcon}"></i>
+                                    <span>${badgeText}</span>
+                                </span>
+                                <label class="perm-switch" title="Toggle Allowed vs. Prohibited">
+                                    <input type="checkbox" ${isAllowed ? 'checked' : ''} onchange="toggleItemPermission('${item.key}', this.checked)">
+                                    <span class="perm-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+
+    /* Apply Preset */
+    async function applyPreset(presetId) {
+        try {
+            const res = await fetch('/api/policy/preset', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ preset: presetId })
+            });
+            const data = await res.json();
+            policyState = data.policy;
+            renderPolicy();
+            showToast(`Exam policy: ${policyState.active_preset_name}`, 'ok');
+            // Refresh video feed cache buster for instant visual HUD update
+            const feed = document.getElementById('liveVideoFeed');
+            if (feed) feed.src = `/api/video_feed?t=${Date.now()}`;
+        } catch (e) {
+            showToast('Failed to apply preset', 'err');
+        }
+    }
+
+    /* Toggle Item Permission (Allowed vs Prohibited) */
+    async function toggleItemPermission(itemKey, isAllowed) {
+        try {
+            const res = await fetch('/api/policy/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ item: itemKey, field: 'allowed', value: isAllowed })
+            });
+            const data = await res.json();
+            policyState = data.policy;
+            renderPolicy();
+            const label = policyState.rules[itemKey]?.label || itemKey;
+            showToast(`${label} is now ${isAllowed ? 'ALLOWED (Permitted in hall)' : 'PROHIBITED (Contraband)'}`, 'ok');
+            // Refresh video feed cache buster for instant visual HUD update
+            const feed = document.getElementById('liveVideoFeed');
+            if (feed) feed.src = `/api/video_feed?t=${Date.now()}`;
+        } catch (e) {
+            showToast('Failed to update item permission', 'err');
+        }
+    }
+
+    /* Toggle Item Tracking / Looking For (Enabled vs Disabled) */
+    async function toggleItemTracking(itemKey, isEnabled) {
+        try {
+            const res = await fetch('/api/policy/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ item: itemKey, field: 'enabled', value: isEnabled })
+            });
+            const data = await res.json();
+            policyState = data.policy;
+            renderPolicy();
+            const label = policyState.rules[itemKey]?.label || itemKey;
+            showToast(`${isEnabled ? 'Monitoring enabled for ' : 'Ignoring '} ${label}`, 'ok');
+        } catch (e) {
+            showToast('Failed to update tracking state', 'err');
+        }
+    }
 
     /* Initial Load */
     fetchStats();
     fetchStatus();
     fetchAlerts();
+    fetchPolicy();
 </script>
 
 </body>

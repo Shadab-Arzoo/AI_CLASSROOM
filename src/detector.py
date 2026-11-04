@@ -22,6 +22,7 @@ from src.config import (
     DEFAULT_CUSTOM_MODEL,
     DEFAULT_PRETRAINED_MODEL
 )
+from src.policy import policy_manager
 
 def compute_iou(boxA, boxB) -> float:
     """Computes Intersection over Union between two [x1, y1, x2, y2] boxes."""
@@ -95,6 +96,36 @@ def analyze_crop_features(crop: np.ndarray) -> Dict[str, Any]:
         "is_dark_electronic": is_dark_electronic,
         "white_pixel_ratio": white_ratio
     }
+
+
+def is_calculator_crop(crop: np.ndarray) -> bool:
+    """
+    Detects whether a handheld device crop exhibits characteristic scientific/desk calculator
+    keypad grid patterns (dense matrix of physical buttons in lower half vs LCD screen in upper).
+    """
+    if crop is None or crop.shape[0] < 24 or crop.shape[1] < 24:
+        return False
+
+    h, w = crop.shape[:2]
+    aspect = float(h) / float(max(1, w))
+    # Standard scientific calculators typically have an aspect ratio between 1.25 and 2.3
+    if aspect < 1.15 or aspect > 2.5:
+        return False
+
+    # Lower 65% contains button rows
+    lower = crop[int(h * 0.35):, :]
+    gray_lower = cv2.cvtColor(lower, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray_lower, 50, 150)
+    lower_edge_ratio = float(np.count_nonzero(edges)) / float(max(1, edges.size))
+
+    # Upper 35% contains LCD display
+    upper = crop[:int(h * 0.35), :]
+    gray_upper = cv2.cvtColor(upper, cv2.COLOR_BGR2GRAY)
+    upper_edges = cv2.Canny(gray_upper, 50, 150)
+    upper_edge_ratio = float(np.count_nonzero(upper_edges)) / float(max(1, upper_edges.size))
+
+    # A calculator has high button edge density in lower keypad
+    return lower_edge_ratio > 0.07 and (lower_edge_ratio >= upper_edge_ratio * 1.15)
 
 
 class Detector:
@@ -228,13 +259,8 @@ class Detector:
         if name in ["cell_phone", "mobile_phone", "phone"]:
             return "cell phone"
 
-        # Remote controls held by students are almost always smartphones / calculators
+        # Remote controls held by students are almost always scientific calculators
         if name == "remote":
-            bw = max(1, bbox[2] - bbox[0])
-            bh = max(1, bbox[3] - bbox[1])
-            aspect = max(bw, bh) / max(1, min(bw, bh))
-            if aspect > 1.20:
-                return "cell phone"
             return "calculator"
 
         # Laptops & computers
@@ -332,17 +358,27 @@ class Detector:
                 if props["is_light_paper"]:
                     cls_name = "book"
 
-            config = CLASS_CONFIG.get(cls_name)
-            if config:
-                refined.append({
-                    "class_name": cls_name,
-                    "label": config["label"],
-                    "severity": config["severity"],
-                    "confidence": conf,
-                    "bbox": bbox,
-                    "color": config["color"],
-                    "description": config["description"]
-                })
+            elif cls_name == "cell phone":
+                # Check if device exhibits button matrix characteristics of a scientific calculator
+                if is_calculator_crop(crop):
+                    cls_name = "calculator"
+
+            # Evaluate against active exam hall policy rules
+            eval_res = policy_manager.evaluate_item(cls_name)
+            if not eval_res["enabled"]:
+                continue  # Admin configured system not to track this item
+
+            refined.append({
+                "class_name": cls_name,
+                "label": eval_res["label"],
+                "severity": eval_res["severity"],
+                "allowed": eval_res["allowed"],
+                "status_badge": eval_res["status_badge"],
+                "confidence": conf,
+                "bbox": bbox,
+                "color": eval_res["color"],
+                "description": CLASS_CONFIG.get(cls_name, {}).get("description", "")
+            })
 
         return refined
 
@@ -425,9 +461,9 @@ class Detector:
 
         # Step 2: Add stationery items that do not conflict with or get contained in threats
         for stat in stationery:
-            config = CLASS_CONFIG.get(stat["class_name"])
-            if not config:
-                continue
+            eval_res = policy_manager.evaluate_item(stat["class_name"])
+            if not eval_res["enabled"]:
+                continue  # Admin disabled looking for this stationery class
 
             conflicts = False
             for t in kept_threats:
@@ -439,50 +475,60 @@ class Detector:
             if not conflicts:
                 final_list.append({
                     "class_name": stat["class_name"],
-                    "label": config["label"],
-                    "severity": config["severity"],
+                    "label": eval_res["label"],
+                    "severity": eval_res["severity"],
+                    "allowed": eval_res["allowed"],
+                    "status_badge": eval_res["status_badge"],
                     "confidence": stat["confidence"],
                     "bbox": stat["bbox"],
-                    "color": config["color"],
-                    "description": config["description"]
+                    "color": eval_res["color"],
+                    "description": CLASS_CONFIG.get(stat["class_name"], {}).get("description", "")
                 })
 
         return final_list
 
     def annotate(self, frame: np.ndarray, detections: List[Dict[str, Any]], tracks: Optional[List[Dict[str, Any]]] = None) -> np.ndarray:
-        """Draws aesthetic bounding boxes, badges, and alerts on the frame."""
+        """Draws aesthetic bounding boxes, badges, and alerts on the frame with permission-aware highlights."""
         annotated = frame.copy()
         items = tracks if tracks is not None else detections
 
         for item in items:
             x1, y1, x2, y2 = item["bbox"]
-            color = item.get("color", (0, 255, 0))
+            is_allowed = item.get("allowed", False)
+            severity = item.get("severity", "INFO")
+            if severity == "ALLOWED":
+                is_allowed = True
+
+            # Mint Green for allowed items, Red/Amber for prohibited threats
+            color = item.get("color", (60, 214, 63) if is_allowed else (0, 0, 255))
             label = item.get("label", item.get("class_name", "Object"))
             conf = item.get("confidence", 0.0)
             track_id = item.get("track_id")
-            severity = item.get("severity", "INFO")
 
             # Draw bounding box
-            thickness = 3 if severity == "HIGH" else 2
+            thickness = 2
+            if not is_allowed and severity == "HIGH":
+                thickness = 3
             cv2.rectangle(annotated, (x1, y1), (x2, y2), color, thickness)
 
-            # Build label text
-            tag = f"{label} {int(conf * 100)}%"
+            # Build label text with permission tag
+            status_text = "[ALLOWED]" if is_allowed else "[PROHIBITED]"
+            tag = f"{label} {status_text} {int(conf * 100)}%"
             if track_id is not None:
                 tag = f"#{track_id} {tag}"
 
             # Label badge background
-            (w, h), _ = cv2.getTextSize(tag, cv2.FONT_HERSHEY_SIMPLEX, 0.48, 1)
-            cv2.rectangle(annotated, (x1, max(0, y1 - 24)), (x1 + w + 12, max(24, y1)), color, -1)
+            (w, h), _ = cv2.getTextSize(tag, cv2.FONT_HERSHEY_SIMPLEX, 0.44, 1)
+            cv2.rectangle(annotated, (x1, max(0, y1 - 22)), (x1 + w + 10, max(22, y1)), color, -1)
 
-            # Label text
-            text_color = (255, 255, 255) if severity in ["HIGH", "MEDIUM"] else (0, 0, 0)
+            # Text color: dark on mint green, white on red/amber
+            text_color = (10, 10, 10) if is_allowed else (255, 255, 255)
             cv2.putText(
                 annotated,
                 tag,
-                (x1 + 6, max(18, y1 - 6)),
+                (x1 + 5, max(16, y1 - 6)),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                0.48,
+                0.44,
                 text_color,
                 1,
                 cv2.LINE_AA

@@ -22,6 +22,7 @@ from src.database import db
 from src.detector import Detector
 from src.tracker import ObjectTracker
 from src.video_stream import VideoStreamManager
+from src.policy import policy_manager
 
 app = FastAPI(
     title="ExamGuard: AI-Based Exam Environment Monitoring System",
@@ -54,11 +55,20 @@ class ControlRequest(BaseModel):
     confidence_threshold: Optional[float] = None
     enable_tracking: Optional[bool] = None
 
+class PresetRequest(BaseModel):
+    preset: str
+
+class PolicyToggleRequest(BaseModel):
+    item: str
+    field: str  # 'allowed' or 'enabled'
+    value: bool
+
 # --- API ENDPOINTS ---
 
 @app.get("/api/status")
 def get_system_status():
-    """System health, loaded model information, and video stream status."""
+    """System health, loaded model information, video stream status, and active exam policy."""
+    policy_state = policy_manager.get_policy_state()
     return {
         "status": "ONLINE",
         "system": "ExamGuard AI Monitoring System",
@@ -70,7 +80,47 @@ def get_system_status():
         "fps": round(stream_manager.current_fps, 1),
         "confidence_threshold": stream_manager.confidence_threshold,
         "tracking_enabled": stream_manager.is_tracking_enabled,
-        "frames_processed": stream_manager.total_frames_processed
+        "frames_processed": stream_manager.total_frames_processed,
+        "active_preset": policy_manager.active_preset_id,
+        "active_preset_name": policy_state["active_preset_name"],
+        "active_preset_badge": policy_state["active_preset_badge"]
+    }
+
+@app.get("/api/policy")
+def get_exam_policy():
+    """Retrieve current exam hall item policy rules, items, and available presets."""
+    return policy_manager.get_policy_state()
+
+@app.post("/api/policy/preset")
+def set_policy_preset(req: PresetRequest):
+    """Switch active exam hall policy to a preset (Standard, Scientific, Open-Book, Lab)."""
+    success = policy_manager.apply_preset(req.preset)
+    if not success:
+        raise HTTPException(status_code=400, detail=f"Unknown policy preset: '{req.preset}'")
+    return {
+        "status": "SUCCESS",
+        "preset": req.preset,
+        "policy": policy_manager.get_policy_state()
+    }
+
+@app.post("/api/policy/toggle")
+def toggle_item_permission(req: PolicyToggleRequest):
+    """Toggle whether a specific item is allowed vs. prohibited or enabled for detection."""
+    if req.field == "allowed":
+        success = policy_manager.set_item_rule(req.item, allowed=req.value)
+    elif req.field == "enabled":
+        success = policy_manager.set_item_rule(req.item, enabled=req.value)
+    else:
+        raise HTTPException(status_code=400, detail="Invalid field; must be 'allowed' or 'enabled'")
+    
+    if not success:
+        raise HTTPException(status_code=400, detail=f"Item '{req.item}' not found in policy registry")
+    return {
+        "status": "SUCCESS",
+        "item": req.item,
+        "field": req.field,
+        "value": req.value,
+        "policy": policy_manager.get_policy_state()
     }
 
 @app.get("/api/stats")
