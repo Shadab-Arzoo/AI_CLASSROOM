@@ -947,115 +947,183 @@
         }
 
         /* ═══════════════════════════════════════════════════
-           Exam Hall Policy & Permitted Items Section
+           Exam Hall Policy & Permitted Items Section (Modern Dark Redesign)
            ═══════════════════════════════════════════════════ */
         .policy-panel {
-            background: var(--dp-color-panel);
-            border: var(--dp-border) solid var(--dp-color-hairline);
+            background: linear-gradient(180deg, #111111 0%, #090909 100%);
+            border: var(--dp-border) solid var(--dp-color-hairline-2);
             border-radius: var(--dp-r-panel);
-            padding: 22px 24px;
+            padding: 24px 26px;
             margin-bottom: var(--dp-gap);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+            box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.7), 0 0 25px -5px rgba(63, 214, 198, 0.04);
             position: relative;
             overflow: hidden;
-            animation: revealUp 0.45s ease;
+            animation: revealUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
         .policy-panel::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(63, 214, 198, 0.4), transparent);
+            height: 2px;
+            background: linear-gradient(90deg, transparent 5%, rgba(63, 214, 198, 0.6) 50%, transparent 95%);
+            animation: sweepGlow 4s ease-in-out infinite alternate;
         }
+        @keyframes sweepGlow {
+            0% { opacity: 0.4; filter: blur(0px); }
+            100% { opacity: 0.9; filter: blur(1px); }
+        }
+
+        /* ── Header ── */
         .policy-hdr {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 16px;
-            margin-bottom: 18px;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
         .policy-hdr-l {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 16px;
         }
         .policy-icon-badge {
-            width: 40px; height: 40px;
+            width: 44px; height: 44px;
             border-radius: var(--dp-r-panel);
-            background: rgba(63, 214, 198, 0.08);
-            border: var(--dp-border) solid rgba(63, 214, 198, 0.25);
+            background: radial-gradient(circle at center, rgba(63, 214, 198, 0.16), rgba(63, 214, 198, 0.03));
+            border: 1px solid rgba(63, 214, 198, 0.35);
             display: flex; align-items: center; justify-content: center;
             color: var(--dp-color-live);
-            font-size: 20px;
+            font-size: 22px;
             flex-shrink: 0;
+            box-shadow: 0 0 18px rgba(63, 214, 198, 0.15);
+            animation: iconPulse 3s ease-in-out infinite alternate;
+        }
+        @keyframes iconPulse {
+            0% { box-shadow: 0 0 12px rgba(63, 214, 198, 0.1); }
+            100% { box-shadow: 0 0 24px rgba(63, 214, 198, 0.25); }
         }
         .policy-title-row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
         }
         .policy-title-row h3 {
-            font-size: 15px;
-            font-weight: 500;
+            font-size: 16px;
+            font-weight: 600;
             color: var(--dp-color-bright);
-            letter-spacing: -0.01em;
+            letter-spacing: -0.015em;
         }
         .policy-pill {
             font-family: var(--dp-mono);
             font-size: 11px;
-            padding: 3px 10px;
+            font-weight: 500;
+            padding: 3px 12px;
             border-radius: var(--dp-r-pill);
             background: rgba(63, 214, 198, 0.12);
             color: var(--dp-color-live);
             border: 1px solid rgba(63, 214, 198, 0.35);
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            font-weight: 500;
+            gap: 7px;
+            transition: all 0.3s ease;
+        }
+        .policy-pill .beacon-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--dp-color-live);
+            box-shadow: 0 0 8px var(--dp-color-live);
+            animation: beaconGlow 1.8s infinite ease-in-out;
+        }
+        @keyframes beaconGlow {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.5; }
         }
         .policy-desc {
             font-size: 12px;
             color: var(--dp-color-read);
-            margin-top: 4px;
-            line-height: 1.4;
+            margin-top: 5px;
+            line-height: 1.45;
+            transition: opacity 0.2s ease;
+        }
+
+        /* Header Right Telemetry Group */
+        .policy-hdr-r {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
         .hall-badge {
             font-family: var(--dp-mono);
             font-size: 11px;
-            color: var(--dp-color-meta);
-            background: var(--dp-color-ground);
-            border: 1px solid var(--dp-color-hairline);
+            color: var(--dp-color-bright);
+            background: #050505;
+            border: 1px solid var(--dp-color-hairline-2);
+            padding: 6px 14px;
+            border-radius: var(--dp-r-pill);
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+        }
+        .hall-badge i { color: var(--dp-color-live); }
+
+        .stat-pill {
+            font-family: var(--dp-mono);
+            font-size: 11px;
             padding: 5px 12px;
             border-radius: var(--dp-r-pill);
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .stat-pill.st-allow {
+            background: rgba(63, 214, 198, 0.08);
+            border: 1px solid rgba(63, 214, 198, 0.25);
+            color: var(--dp-color-live);
+        }
+        .stat-pill.st-prohibit {
+            background: rgba(224, 82, 82, 0.08);
+            border: 1px solid rgba(224, 82, 82, 0.25);
+            color: #e05252;
         }
 
-        /* Presets Bar */
+        /* ── Presets Toolbar ── */
         .policy-presets-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            padding: 12px 18px;
+            background: #060606;
+            border: 1px solid var(--dp-color-hairline);
+            border-radius: var(--dp-r-panel);
+            margin-bottom: 18px;
+        }
+        .presets-l {
             display: flex;
             align-items: center;
             gap: 12px;
             flex-wrap: wrap;
-            padding: 12px 16px;
-            background: var(--dp-color-ground);
-            border: 1px solid var(--dp-color-hairline);
-            border-radius: var(--dp-r-panel);
-            margin-bottom: 20px;
         }
         .presets-label {
             font-family: var(--dp-mono);
             font-size: 11px;
             color: var(--dp-color-meta);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.06em;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
         }
+        .presets-label i { color: var(--dp-color-bright); }
         .presets-group {
             display: flex;
             align-items: center;
@@ -1066,199 +1134,427 @@
             font-family: var(--dp-face);
             font-size: 12px;
             font-weight: 500;
-            padding: 6px 14px;
+            padding: 6px 15px;
             border-radius: var(--dp-r-pill);
-            background: var(--dp-color-panel);
+            background: #111111;
             border: 1px solid var(--dp-color-hairline);
             color: var(--dp-color-read);
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 7px;
+            user-select: none;
         }
         .preset-btn:hover {
             color: var(--dp-color-bright);
             border-color: var(--dp-color-hairline-2);
-            background: rgba(255, 255, 255, 0.04);
+            background: #161616;
             transform: translateY(-1px);
         }
+        .preset-btn:active {
+            transform: scale(0.97);
+        }
         .preset-btn.active {
-            background: var(--dp-color-bright);
-            color: var(--dp-color-inverse-ink);
-            border-color: var(--dp-color-bright);
+            background: #f5f5f5;
+            color: #050505;
+            border-color: #ffffff;
             font-weight: 600;
-            box-shadow: 0 0 16px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px -2px rgba(255, 255, 255, 0.35);
+            transform: translateY(-1px);
+        }
+        .preset-btn.active i { color: #050505; }
+
+        /* Quick Bulk Action Buttons */
+        .bulk-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .bulk-btn {
+            font-family: var(--dp-mono);
+            font-size: 11px;
+            padding: 5px 12px;
+            border-radius: var(--dp-r-pill);
+            background: transparent;
+            border: 1px solid var(--dp-color-hairline);
+            color: var(--dp-color-meta);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+        .bulk-btn:hover {
+            border-color: var(--dp-color-hairline-2);
+            color: var(--dp-color-bright);
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .bulk-btn:active { transform: scale(0.96); }
+
+        /* ── Filter Bar (Category Filter Pills & Search) ── */
+        .policy-filter-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+        .cat-tabs {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .cat-tab {
+            font-family: var(--dp-mono);
+            font-size: 11px;
+            padding: 5px 12px;
+            border-radius: var(--dp-r-pill);
+            background: transparent;
+            border: 1px solid var(--dp-color-hairline);
+            color: var(--dp-color-meta);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .cat-tab:hover {
+            color: var(--dp-color-bright);
+            border-color: var(--dp-color-hairline-2);
+        }
+        .cat-tab.active {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--dp-color-bright);
+            border-color: var(--dp-color-hairline-2);
+        }
+        .cat-tab .count {
+            font-size: 10px;
+            opacity: 0.7;
         }
 
-        /* Items Grid */
+        .psearch {
+            position: relative;
+            display: flex;
+            align-items: center;
+            min-width: 220px;
+        }
+        .psearch i {
+            position: absolute;
+            left: 11px;
+            color: var(--dp-color-meta);
+            font-size: 13px;
+            pointer-events: none;
+        }
+        .psearch input {
+            width: 100%;
+            background: #060606;
+            border: 1px solid var(--dp-color-hairline);
+            border-radius: var(--dp-r-pill);
+            padding: 6px 12px 6px 30px;
+            font-family: var(--dp-face);
+            font-size: 12px;
+            color: var(--dp-color-bright);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .psearch input::placeholder { color: var(--dp-color-hairline-2); }
+        .psearch input:focus {
+            border-color: rgba(63, 214, 198, 0.4);
+            box-shadow: 0 0 0 3px rgba(63, 214, 198, 0.12);
+        }
+
+        /* ── Items Grid ── */
         .policy-items-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 14px;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 16px;
         }
+
+        /* ── Item Card ── */
         .policy-card {
             background: #090909;
             border: 1px solid var(--dp-color-hairline);
             border-radius: var(--dp-r-panel);
-            padding: 14px 16px;
+            padding: 16px 18px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            gap: 12px;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            gap: 14px;
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                        border-color 0.25s ease,
+                        box-shadow 0.28s ease,
+                        background 0.3s ease,
+                        opacity 0.25s ease;
             position: relative;
+            overflow: hidden;
+            animation: cardEntrance 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @keyframes cardEntrance {
+            from {
+                opacity: 0;
+                transform: translateY(16px) scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
         .policy-card:hover {
-            border-color: var(--dp-color-hairline-2);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            transform: translateY(-3px);
         }
+
+        /* Allowed Card State */
         .policy-card.is-allowed {
-            border-left: 3px solid #3fd6c6;
-            background: linear-gradient(180deg, rgba(63, 214, 198, 0.04) 0%, #090909 100%);
+            border-color: rgba(63, 214, 198, 0.22);
+            background: radial-gradient(circle at 10% 10%, rgba(63, 214, 198, 0.06), #090909 75%);
         }
+        .policy-card.is-allowed::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+            background: var(--dp-color-live);
+            box-shadow: 0 0 10px rgba(63, 214, 198, 0.8);
+            border-radius: 3px 0 0 3px;
+        }
+        .policy-card.is-allowed:hover {
+            border-color: rgba(63, 214, 198, 0.45);
+            box-shadow: 0 12px 30px -6px rgba(0, 0, 0, 0.8), 0 0 24px -4px rgba(63, 214, 198, 0.18);
+        }
+
+        /* Prohibited Card State */
         .policy-card.is-prohibited {
-            border-left: 3px solid #e05252;
-            background: linear-gradient(180deg, rgba(224, 82, 82, 0.04) 0%, #090909 100%);
+            border-color: rgba(224, 82, 82, 0.22);
+            background: radial-gradient(circle at 10% 10%, rgba(224, 82, 82, 0.06), #090909 75%);
         }
+        .policy-card.is-prohibited::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+            background: #e05252;
+            box-shadow: 0 0 10px rgba(224, 82, 82, 0.8);
+            border-radius: 3px 0 0 3px;
+        }
+        .policy-card.is-prohibited:hover {
+            border-color: rgba(224, 82, 82, 0.45);
+            box-shadow: 0 12px 30px -6px rgba(0, 0, 0, 0.8), 0 0 24px -4px rgba(224, 82, 82, 0.18);
+        }
+
+        /* Disabled / Ignored Card State */
         .policy-card.is-disabled {
-            opacity: 0.45;
-            filter: grayscale(0.8);
+            opacity: 0.38;
+            filter: grayscale(0.85);
+            border-color: rgba(255, 255, 255, 0.05);
+            background: #070707;
         }
+        .policy-card.is-disabled::before {
+            display: none;
+        }
+
+        /* Micro Pulse Animation when Toggled */
+        .policy-card.pulse-allow {
+            animation: pulseAllow 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes pulseAllow {
+            0% { box-shadow: 0 0 0 0 rgba(63, 214, 198, 0.7); }
+            100% { box-shadow: 0 0 0 20px transparent; }
+        }
+        .policy-card.pulse-prohibit {
+            animation: pulseProhibit 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes pulseProhibit {
+            0% { box-shadow: 0 0 0 0 rgba(224, 82, 82, 0.7); }
+            100% { box-shadow: 0 0 0 20px transparent; }
+        }
+
+        /* Card Header & Content */
         .pcard-header {
             display: flex;
             align-items: flex-start;
             gap: 12px;
         }
         .pcard-icon {
-            width: 34px; height: 34px;
-            border-radius: 6px;
+            width: 38px; height: 38px;
+            border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 18px;
+            font-size: 19px;
             flex-shrink: 0;
-            background: var(--dp-color-panel);
+            background: #101010;
             border: 1px solid var(--dp-color-hairline);
             color: var(--dp-color-bright);
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
         }
         .policy-card.is-allowed .pcard-icon {
-            color: #3fd6c6;
-            border-color: rgba(63, 214, 198, 0.35);
-            background: rgba(63, 214, 198, 0.08);
+            color: var(--dp-color-live);
+            border-color: rgba(63, 214, 198, 0.4);
+            background: rgba(63, 214, 198, 0.1);
+            box-shadow: 0 0 14px rgba(63, 214, 198, 0.15);
         }
         .policy-card.is-prohibited .pcard-icon {
             color: #e05252;
-            border-color: rgba(224, 82, 82, 0.35);
-            background: rgba(224, 82, 82, 0.08);
+            border-color: rgba(224, 82, 82, 0.4);
+            background: rgba(224, 82, 82, 0.1);
+            box-shadow: 0 0 14px rgba(224, 82, 82, 0.15);
+        }
+        .pcard-info {
+            flex: 1;
+            min-width: 0;
         }
         .pcard-info h4 {
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 13.5px;
+            font-weight: 600;
             color: var(--dp-color-bright);
-            margin-bottom: 2px;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .pcard-cat {
             font-family: var(--dp-mono);
             font-size: 10px;
             color: var(--dp-color-meta);
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.05em;
+            display: inline-block;
         }
         .pcard-desc {
-            font-size: 11px;
-            color: var(--dp-color-meta);
-            line-height: 1.4;
+            font-size: 11.5px;
+            color: var(--dp-color-read);
+            line-height: 1.45;
+            min-height: 33px;
         }
+
+        /* Card Footer Controls */
         .pcard-footer {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            gap: 8px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            gap: 10px;
         }
-        .pcard-tracking-tog {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+
+        /* Look for item (Eye Button Toggle) */
+        .pcard-eye-btn {
             font-family: var(--dp-mono);
             font-size: 11px;
+            padding: 4px 10px;
+            border-radius: var(--dp-r-pill);
+            background: #111111;
+            border: 1px solid var(--dp-color-hairline);
             color: var(--dp-color-meta);
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
             user-select: none;
         }
-        .pcard-tracking-tog input {
-            accent-color: var(--dp-color-live);
-            cursor: pointer;
-            width: 14px; height: 14px;
+        .pcard-eye-btn:hover {
+            border-color: var(--dp-color-hairline-2);
+            color: var(--dp-color-bright);
         }
+        .pcard-eye-btn.active {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--dp-color-bright);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+        .pcard-eye-btn.active i {
+            color: var(--dp-color-live);
+        }
+        .pcard-eye-btn.ignored {
+            color: var(--dp-color-hairline-2);
+            border-style: dashed;
+        }
+
+        /* Permission Controls */
         .pcard-perm-control {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
         .perm-badge {
             font-family: var(--dp-mono);
             font-size: 11px;
             font-weight: 600;
-            padding: 3px 9px;
+            padding: 4px 10px;
             border-radius: var(--dp-r-pill);
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            letter-spacing: 0.02em;
+            gap: 5px;
+            letter-spacing: 0.03em;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .perm-badge.allowed {
             background: rgba(63, 214, 198, 0.15);
-            color: #3fd6c6;
-            border: 1px solid rgba(63, 214, 198, 0.4);
+            color: var(--dp-color-live);
+            border: 1px solid rgba(63, 214, 198, 0.45);
+            box-shadow: 0 0 12px rgba(63, 214, 198, 0.15);
+            animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .perm-badge.prohibited {
             background: rgba(224, 82, 82, 0.15);
             color: #e05252;
-            border: 1px solid rgba(224, 82, 82, 0.4);
+            border: 1px solid rgba(224, 82, 82, 0.45);
+            box-shadow: 0 0 12px rgba(224, 82, 82, 0.15);
+            animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes badgePop {
+            0% { transform: scale(0.85); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
-        /* Switch Toggle for Allowed vs Prohibited */
+        /* Tactile Switch Toggle */
         .perm-switch {
             position: relative;
             display: inline-block;
-            width: 44px;
-            height: 22px;
+            width: 48px;
+            height: 24px;
             flex-shrink: 0;
+            cursor: pointer;
         }
         .perm-switch input {
-            opacity: 0; width: 0; height: 0;
+            opacity: 0; width: 0; height: 0; position: absolute;
         }
         .perm-slider {
             position: absolute;
-            cursor: pointer;
             inset: 0;
-            background: #201212;
-            border: 1px solid rgba(224, 82, 82, 0.4);
+            background: #1c0e10;
+            border: 1px solid rgba(224, 82, 82, 0.45);
             border-radius: var(--dp-r-pill);
-            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
         }
         .perm-slider::before {
             position: absolute;
             content: "";
-            height: 14px;
-            width: 14px;
+            height: 16px;
+            width: 16px;
             left: 3px;
             bottom: 3px;
             background: #e05252;
             border-radius: 50%;
-            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 2px 8px rgba(224, 82, 82, 0.6);
+        }
+        .perm-switch:hover .perm-slider::before {
+            transform: scale(1.1);
         }
         .perm-switch input:checked + .perm-slider {
-            background: #0f241a;
-            border-color: rgba(63, 214, 198, 0.5);
+            background: #081e18;
+            border-color: rgba(63, 214, 198, 0.55);
         }
         .perm-switch input:checked + .perm-slider::before {
-            transform: translateX(22px);
-            background: #3fd6c6;
-            box-shadow: 0 0 8px rgba(63, 214, 198, 0.6);
+            transform: translateX(24px);
+            background: var(--dp-color-live);
+            box-shadow: 0 0 12px rgba(63, 214, 198, 0.8);
+        }
+        .perm-switch:hover input:checked + .perm-slider::before {
+            transform: translateX(24px) scale(1.1);
         }
 
         /* ═══════════════════════════════════════════════════
@@ -1461,6 +1757,7 @@
 
             <!-- ═══ Exam Hall Item Permissions & Policy Controls ═══ -->
             <div class="policy-panel" id="examPolicySection">
+                <!-- Header with Telemetry Cluster -->
                 <div class="policy-hdr">
                     <div class="policy-hdr-l">
                         <div class="policy-icon-badge">
@@ -1469,27 +1766,70 @@
                         <div>
                             <div class="policy-title-row">
                                 <h3>Exam Hall Item Permissions &amp; Policy</h3>
-                                <span class="policy-pill" id="activePolicyBadge">Standard Theory Exam</span>
+                                <span class="policy-pill">
+                                    <span class="beacon-dot"></span>
+                                    <span id="activePolicyBadge">Standard Theory Exam</span>
+                                </span>
                             </div>
                             <p class="policy-desc" id="activePolicyDesc">
-                                Configure authorized vs. prohibited items in this room. Allowed items appear with a green reticle, while prohibited items immediately trigger alerts.
+                                Configure authorized vs. prohibited items in this room. Allowed items appear with a green HUD reticle, while prohibited items immediately trigger alerts.
                             </p>
                         </div>
                     </div>
+
                     <div class="policy-hdr-r">
                         <span class="hall-badge"><i class="ph-bold ph-door"></i> <span id="policyHallLabel">ExamHall-Cam-01</span></span>
+                        <span class="stat-pill st-allow"><i class="ph-bold ph-check"></i> <strong id="summaryAllowedCount">0</strong> Allowed</span>
+                        <span class="stat-pill st-prohibit"><i class="ph-bold ph-prohibit"></i> <strong id="summaryProhibitedCount">0</strong> Prohibited</span>
                     </div>
                 </div>
 
-                <!-- Quick Presets Bar -->
+                <!-- Presets & Bulk Actions Rail -->
                 <div class="policy-presets-bar">
-                    <span class="presets-label"><i class="ph-bold ph-lightning"></i> Hall Presets:</span>
-                    <div class="presets-group" id="presetsButtonGroup">
-                        <!-- Populated dynamically by JavaScript -->
+                    <div class="presets-l">
+                        <span class="presets-label"><i class="ph-bold ph-sparkle"></i> Presets:</span>
+                        <div class="presets-group" id="presetsButtonGroup">
+                            <!-- Populated dynamically by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="bulk-actions">
+                        <button onclick="bulkSetAll(true)" class="bulk-btn" title="Mark all items as permitted in this room">
+                            <i class="ph-bold ph-check-square"></i><span>Allow All</span>
+                        </button>
+                        <button onclick="bulkSetAll(false)" class="bulk-btn" title="Mark all items as strictly prohibited">
+                            <i class="ph-bold ph-prohibit"></i><span>Prohibit All</span>
+                        </button>
                     </div>
                 </div>
 
-                <!-- Items Grid with Interactive Toggles -->
+                <!-- Category Filter Tabs & Instant Search -->
+                <div class="policy-filter-bar">
+                    <div class="cat-tabs" id="policyCategoryTabs">
+                        <button onclick="setCategoryFilter('ALL')" id="catTabALL" class="cat-tab active">
+                            <span>All Items</span><span class="count" id="catCountALL">12</span>
+                        </button>
+                        <button onclick="setCategoryFilter('Electronics')" id="catTabElectronics" class="cat-tab">
+                            <span>Electronics</span><span class="count" id="catCountElectronics">5</span>
+                        </button>
+                        <button onclick="setCategoryFilter('Exam Material')" id="catTabExamMaterial" class="cat-tab">
+                            <span>Exam Material</span><span class="count" id="catCountExamMaterial">1</span>
+                        </button>
+                        <button onclick="setCategoryFilter('Stationery')" id="catTabStationery" class="cat-tab">
+                            <span>Stationery</span><span class="count" id="catCountStationery">3</span>
+                        </button>
+                        <button onclick="setCategoryFilter('Storage')" id="catTabStorage" class="cat-tab">
+                            <span>Storage &amp; Tools</span><span class="count" id="catCountStorage">3</span>
+                        </button>
+                    </div>
+
+                    <div class="psearch">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <input type="text" id="policySearchInput" placeholder="Filter items (e.g. calculator, phone)..." oninput="handlePolicySearch(this.value)">
+                    </div>
+                </div>
+
+                <!-- Items Grid with Interactive Toggles & Staggered Animations -->
                 <div class="policy-items-grid" id="policyItemsGrid">
                     <!-- Populated dynamically by JavaScript -->
                 </div>
@@ -1885,9 +2225,18 @@
     setInterval(fetchPolicy, 6000);
 
     /* ═══════════════════════════════════════════════════
-       Exam Hall Policy & Permitted Items Logic
+       Exam Hall Policy & Permitted Items Logic (Upgraded)
        ═══════════════════════════════════════════════════ */
     let policyState = null;
+    let selectedPolicyCategory = 'ALL';
+    let policySearchQuery = '';
+
+    const PRESET_ICONS = {
+        'standard': 'ph-shield-check',
+        'scientific': 'ph-calculator',
+        'open_book': 'ph-book-open-text',
+        'lab_exam': 'ph-laptop'
+    };
 
     /* Fetch Exam Hall Policy */
     async function fetchPolicy() {
@@ -1900,11 +2249,31 @@
         }
     }
 
+    /* Category Filter Tab Change */
+    function setCategoryFilter(category) {
+        selectedPolicyCategory = category;
+        const tabs = ['ALL', 'Electronics', 'Exam Material', 'Stationery', 'Storage'];
+        tabs.forEach(t => {
+            const tabId = 'catTab' + t.replace(/\s+/g, '');
+            const tabEl = document.getElementById(tabId);
+            if (tabEl) {
+                tabEl.className = (t === category) ? 'cat-tab active' : 'cat-tab';
+            }
+        });
+        renderPolicy();
+    }
+
+    /* Real-Time Item Search */
+    function handlePolicySearch(query) {
+        policySearchQuery = (query || '').toLowerCase().trim();
+        renderPolicy();
+    }
+
     /* Render Policy Section */
     function renderPolicy() {
-        if (!policyState) return;
+        if (!policyState || !policyState.items) return;
 
-        // Update badge and description
+        // 1. Update Badge, Hall and Description
         const badgeEl = document.getElementById('activePolicyBadge');
         if (badgeEl) {
             badgeEl.innerText = policyState.active_preset_badge || policyState.active_preset_name;
@@ -1914,33 +2283,93 @@
             descEl.innerText = policyState.description || 'Configured examination room item restrictions.';
         }
 
-        // Render Presets Bar
+        // 2. Calculate Telemetry & Summary Counts
+        let totalAllowed = 0;
+        let totalProhibited = 0;
+        const catCounts = { 'ALL': policyState.items.length, 'Electronics': 0, 'Exam Material': 0, 'Stationery': 0, 'Storage': 0 };
+
+        policyState.items.forEach(it => {
+            if (it.allowed) totalAllowed++;
+            else totalProhibited++;
+
+            if (it.category === 'Electronics') catCounts['Electronics']++;
+            else if (it.category === 'Exam Material') catCounts['Exam Material']++;
+            else if (it.category === 'Stationery') catCounts['Stationery']++;
+            else catCounts['Storage']++; // includes Storage and Tools
+        });
+
+        const allowedEl = document.getElementById('summaryAllowedCount');
+        const prohibitedEl = document.getElementById('summaryProhibitedCount');
+        if (allowedEl) animateCount(allowedEl, totalAllowed);
+        if (prohibitedEl) animateCount(prohibitedEl, totalProhibited);
+
+        // Update category tab count badges
+        const countAll = document.getElementById('catCountALL');
+        if (countAll) countAll.innerText = catCounts['ALL'];
+        const countElec = document.getElementById('catCountElectronics');
+        if (countElec) countElec.innerText = catCounts['Electronics'];
+        const countMat = document.getElementById('catCountExamMaterial');
+        if (countMat) countMat.innerText = catCounts['Exam Material'];
+        const countStat = document.getElementById('catCountStationery');
+        if (countStat) countStat.innerText = catCounts['Stationery'];
+        const countStor = document.getElementById('catCountStorage');
+        if (countStor) countStor.innerText = catCounts['Storage'];
+
+        // 3. Render Presets Rail
         const presetsGroup = document.getElementById('presetsButtonGroup');
         if (presetsGroup) {
             presetsGroup.innerHTML = (policyState.presets || []).map(p => {
                 const isActive = (p.id === policyState.active_preset_id);
+                const icon = PRESET_ICONS[p.id] || 'ph-sparkle';
                 return `
-                    <button onclick="applyPreset('${p.id}')" class="preset-btn ${isActive ? 'active' : ''}">
-                        <i class="ph-bold ${isActive ? 'ph-check-circle' : 'ph-circle'}"></i>
+                    <button onclick="applyPreset('${p.id}')" class="preset-btn ${isActive ? 'active' : ''}" title="${p.description}">
+                        <i class="ph-bold ${icon}"></i>
                         <span>${p.name.replace(/ \(.*\)/, '')}</span>
                     </button>
                 `;
             }).join('');
         }
 
-        // Render Items Grid
+        // 4. Filter Items by Category and Search
+        let filteredItems = policyState.items;
+        if (selectedPolicyCategory !== 'ALL') {
+            if (selectedPolicyCategory === 'Storage') {
+                filteredItems = filteredItems.filter(it => it.category === 'Storage' || it.category === 'Tools');
+            } else {
+                filteredItems = filteredItems.filter(it => it.category === selectedPolicyCategory);
+            }
+        }
+
+        if (policySearchQuery) {
+            filteredItems = filteredItems.filter(it =>
+                it.label.toLowerCase().includes(policySearchQuery) ||
+                it.key.toLowerCase().includes(policySearchQuery) ||
+                (it.description || '').toLowerCase().includes(policySearchQuery)
+            );
+        }
+
+        // 5. Render Items Grid
         const grid = document.getElementById('policyItemsGrid');
         if (grid) {
-            grid.innerHTML = (policyState.items || []).map(item => {
+            if (filteredItems.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; padding: 40px 20px; text-align: center; color: var(--dp-color-meta);">
+                        <i class="ph ph-magnifying-glass" style="font-size: 32px; margin-bottom: 8px; opacity: 0.5;"></i>
+                        <p style="font-size: 13px;">No items match "${policySearchQuery}". Try another keyword or clear search.</p>
+                    </div>`;
+                return;
+            }
+
+            grid.innerHTML = filteredItems.map((item, idx) => {
                 const isAllowed = item.allowed;
                 const isEnabled = item.enabled;
                 const cardStateCls = !isEnabled ? 'is-disabled' : (isAllowed ? 'is-allowed' : 'is-prohibited');
                 const badgeCls = isAllowed ? 'allowed' : 'prohibited';
                 const badgeText = isAllowed ? 'ALLOWED' : 'PROHIBITED';
-                const badgeIcon = isAllowed ? 'ph-bold ph-check-circle' : 'ph-bold ph-prohibit';
+                const badgeIcon = isAllowed ? 'ph-bold ph-check' : 'ph-bold ph-prohibit';
 
                 return `
-                    <div class="policy-card ${cardStateCls}" id="pcard-${item.key}">
+                    <div class="policy-card ${cardStateCls}" id="pcard-${item.key}" style="animation-delay: ${idx * 35}ms;">
                         <div class="pcard-header">
                             <div class="pcard-icon">
                                 <i class="ph-bold ${item.icon || 'ph-cube'}"></i>
@@ -1950,12 +2379,16 @@
                                 <span class="pcard-cat">${item.category}</span>
                             </div>
                         </div>
+
                         <p class="pcard-desc">${item.description}</p>
+
                         <div class="pcard-footer">
-                            <label class="pcard-tracking-tog" title="Toggle AI detection for this item">
-                                <input type="checkbox" ${isEnabled ? 'checked' : ''} onchange="toggleItemTracking('${item.key}', this.checked)">
-                                <span>Look for item</span>
-                            </label>
+                            <button onclick="toggleItemTracking('${item.key}', ${!isEnabled})"
+                                    class="pcard-eye-btn ${isEnabled ? 'active' : 'ignored'}"
+                                    title="${isEnabled ? 'AI is tracking this object in the camera feed' : 'AI is completely ignoring this item'}">
+                                <i class="ph-bold ${isEnabled ? 'ph-eye' : 'ph-eye-slash'}"></i>
+                                <span>${isEnabled ? 'Looking for item' : 'Detection Off'}</span>
+                            </button>
 
                             <div class="pcard-perm-control">
                                 <span class="perm-badge ${badgeCls}">
@@ -1963,7 +2396,7 @@
                                     <span>${badgeText}</span>
                                 </span>
                                 <label class="perm-switch" title="Toggle Allowed vs. Prohibited">
-                                    <input type="checkbox" ${isAllowed ? 'checked' : ''} onchange="toggleItemPermission('${item.key}', this.checked)">
+                                    <input type="checkbox" ${isAllowed ? 'checked' : ''} onchange="toggleItemPermission('${item.key}', this.checked, event)">
                                     <span class="perm-slider"></span>
                                 </label>
                             </div>
@@ -1985,8 +2418,9 @@
             const data = await res.json();
             policyState = data.policy;
             renderPolicy();
-            showToast(`Exam policy: ${policyState.active_preset_name}`, 'ok');
-            // Refresh video feed cache buster for instant visual HUD update
+            showToast(`Exam hall policy switched: ${policyState.active_preset_name}`, 'ok');
+
+            // Visual feedback on video stream
             const feed = document.getElementById('liveVideoFeed');
             if (feed) feed.src = `/api/video_feed?t=${Date.now()}`;
         } catch (e) {
@@ -1995,7 +2429,14 @@
     }
 
     /* Toggle Item Permission (Allowed vs Prohibited) */
-    async function toggleItemPermission(itemKey, isAllowed) {
+    async function toggleItemPermission(itemKey, isAllowed, event) {
+        const card = document.getElementById(`pcard-${itemKey}`);
+        if (card) {
+            card.classList.remove('pulse-allow', 'pulse-prohibit');
+            void card.offsetWidth; // Force CSS reflow for animation restart
+            card.classList.add(isAllowed ? 'pulse-allow' : 'pulse-prohibit');
+        }
+
         try {
             const res = await fetch('/api/policy/toggle', {
                 method: 'POST',
@@ -2005,8 +2446,10 @@
             const data = await res.json();
             policyState = data.policy;
             renderPolicy();
+
             const label = policyState.rules[itemKey]?.label || itemKey;
             showToast(`${label} is now ${isAllowed ? 'ALLOWED (Permitted in hall)' : 'PROHIBITED (Contraband)'}`, 'ok');
+
             // Refresh video feed cache buster for instant visual HUD update
             const feed = document.getElementById('liveVideoFeed');
             if (feed) feed.src = `/api/video_feed?t=${Date.now()}`;
@@ -2026,10 +2469,33 @@
             const data = await res.json();
             policyState = data.policy;
             renderPolicy();
+
             const label = policyState.rules[itemKey]?.label || itemKey;
             showToast(`${isEnabled ? 'Monitoring enabled for ' : 'Ignoring '} ${label}`, 'ok');
         } catch (e) {
             showToast('Failed to update tracking state', 'err');
+        }
+    }
+
+    /* Bulk Action: Set All Items Allowed or Prohibited */
+    async function bulkSetAll(isAllowed) {
+        if (!policyState || !policyState.items) return;
+        showToast(isAllowed ? 'Authorizing all items for this exam hall…' : 'Applying strict lockdown: All items prohibited…', 'ok');
+
+        try {
+            for (const item of policyState.items) {
+                await fetch('/api/policy/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ item: item.key, field: 'allowed', value: isAllowed })
+                });
+            }
+            await fetchPolicy();
+            showToast(isAllowed ? 'All items are now ALLOWED in this hall' : 'Strict Mode: All items PROHIBITED', 'ok');
+            const feed = document.getElementById('liveVideoFeed');
+            if (feed) feed.src = `/api/video_feed?t=${Date.now()}`;
+        } catch (e) {
+            showToast('Failed to apply bulk policy change', 'err');
         }
     }
 
