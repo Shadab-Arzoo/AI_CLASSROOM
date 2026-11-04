@@ -19,7 +19,7 @@ def open_browser(port: int):
 
 def main():
     port = 8000
-    host = "127.0.0.1"
+    host = "0.0.0.0"
 
     print("=" * 65)
     print("        EXAMGUARD: AI-BASED EXAM MONITORING SYSTEM")

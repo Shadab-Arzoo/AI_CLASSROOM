@@ -47,16 +47,52 @@ CLASS_CONFIG = {
         "description": "Unauthorized computing device",
         "color": (0, 0, 255),
     },
+    "tablet": {
+        "severity": "HIGH",
+        "label": "Tablet / Screen",
+        "description": "Unauthorized portable screen / computing device",
+        "color": (0, 0, 255),
+    },
+    "keyboard": {
+        "severity": "HIGH",
+        "label": "Computer / Keyboard",
+        "description": "Unauthorized computing peripheral",
+        "color": (0, 0, 255),
+    },
+    "mouse": {
+        "severity": "HIGH",
+        "label": "Computer Mouse",
+        "description": "Unauthorized computing accessory",
+        "color": (0, 0, 255),
+    },
     "headphones": {
         "severity": "HIGH",
         "label": "Headphones / Earphones",
         "description": "Unauthorized audio device",
         "color": (0, 0, 255),
     },
+    "clock": {
+        "severity": "HIGH",
+        "label": "Smartwatch / Digital Timer",
+        "description": "Unauthorized wearable or digital timer",
+        "color": (0, 0, 255),
+    },
+    "backpack": {
+        "severity": "HIGH",
+        "label": "Backpack / Bag",
+        "description": "Prohibited bag near candidate desk",
+        "color": (0, 0, 255),
+    },
+    "handbag": {
+        "severity": "HIGH",
+        "label": "Handbag / Pouch",
+        "description": "Prohibited bag or pouch near candidate desk",
+        "color": (0, 0, 255),
+    },
     "book": {
         "severity": "MEDIUM",
         "label": "Book / Notes",
-        "description": "Potentially unauthorized reading material",
+        "description": "Potentially unauthorized reading or exam material",
         "color": (0, 140, 255),  # Orange (BGR)
     },
     "paper": {
@@ -64,6 +100,12 @@ CLASS_CONFIG = {
         "label": "Loose Paper / Sheet",
         "description": "Possible cheat sheet or unauthorized paper",
         "color": (0, 215, 255),  # Amber (BGR)
+    },
+    "scissors": {
+        "severity": "MEDIUM",
+        "label": "Scissors / Tool",
+        "description": "Unauthorized cutting tool",
+        "color": (0, 140, 255),
     },
     
     # Permitted Examination Items (Logged as normal/permitted activity)
@@ -106,10 +148,10 @@ CLASS_CONFIG = {
 }
 
 # Detection & Tracking Thresholds
-DEFAULT_CONF_THRESHOLD = 0.30
-DEFAULT_IOU_THRESHOLD = 0.45
+DEFAULT_CONF_THRESHOLD = 0.20  # Optimized for real-world webcam conditions
+DEFAULT_IOU_THRESHOLD = 0.40
 ALERT_COOLDOWN_SECONDS = 3.0  # Avoid duplicate alerts for the same track within 3 seconds
-MIN_DETECTION_FRAMES = 3      # Consecutive frames an object must appear to confirm an alert
+MIN_DETECTION_FRAMES = 2      # Fast confirmation for moving exam items
 
 # Camera Settings
 DEFAULT_CAMERA_ID = "ExamHall-Cam-01"

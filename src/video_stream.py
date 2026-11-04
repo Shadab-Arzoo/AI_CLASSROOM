@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Optional, Generator
 import cv2
 import numpy as np
-from src.config import DEFAULT_CAMERA_ID, DEFAULT_VIDEO_SOURCE, VIDEOS_DIR
+from src.config import DEFAULT_CAMERA_ID, DEFAULT_VIDEO_SOURCE, DEFAULT_CONF_THRESHOLD, VIDEOS_DIR
 from src.detector import Detector
 from src.tracker import ObjectTracker
 
@@ -28,7 +28,7 @@ class VideoStreamManager:
         self.current_fps = 0.0
         self.total_frames_processed = 0
         self.is_tracking_enabled = True
-        self.confidence_threshold = 0.30
+        self.confidence_threshold = DEFAULT_CONF_THRESHOLD
 
     def start_source(self, source: Optional[str] = None):
         """Starts or switches video capture source (webcam index or file path)."""

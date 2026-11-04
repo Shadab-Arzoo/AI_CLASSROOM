@@ -3,534 +3,1540 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExamGuard - AI Exam Environment Monitoring Dashboard</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>ExamGuard — AI Exam Environment Monitoring</title>
+
+    <!-- Geist Font Family -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-mono/style.css">
+
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        /* ═══════════════════════════════════════════════════
+           Modern Dark — Design Tokens
+           ═══════════════════════════════════════════════════ */
+        :root {
+            --dp-color-ground:      #050505;
+            --dp-color-panel:       #0e0e0e;
+            --dp-color-hairline:    #222222;
+            --dp-color-hairline-2:  #303030;
+            --dp-color-bright:      #f2f2f2;
+            --dp-color-read:        #a6a9ad;
+            --dp-color-meta:        #8a8d91;
+            --dp-color-live:        #3fd6c6;
+            --dp-color-inverse-ink: #0a0a0a;
+            --dp-color-dim:         #96999d;
+
+            --dp-face:  "Geist", "Helvetica Neue", Arial, sans-serif;
+            --dp-mono:  "Geist Mono", "SFMono-Regular", Menlo, monospace;
+
+            --dp-gutter: 48px;
+            --dp-gap:    24px;
+            --dp-max:    1360px;
+
+            --dp-r-panel: 6px;
+            --dp-r-pill:  999px;
+
+            --dp-border: 1px;
+            --dp-dur:    120ms;
+            --dp-ease:   ease-out;
+
+            /* Functional severity */
+            --sev-high:       #e05252;
+            --sev-high-bg:    #201212;
+            --sev-med:        #d49d35;
+            --sev-med-bg:     #1c170f;
+            --sev-info:       #3dbd7d;
+            --sev-info-bg:    #0f1c14;
+        }
+
+        /* ═══ Reset ═══ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0b0f19;
-            color: #e2e8f0;
+            font-family: var(--dp-face);
+            background: var(--dp-color-ground);
+            color: var(--dp-color-read);
+            line-height: 1.55;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            position: relative;
         }
-        .pulse-red {
-            animation: pulse-red 2s infinite;
+
+        /* Subtle Animated Cyber Grid Background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(63, 214, 198, 0.05) 0%, transparent 65%),
+                radial-gradient(circle at 85% 90%, rgba(255, 255, 255, 0.02) 0%, transparent 50%),
+                radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 28px 28px;
+            pointer-events: none;
+            z-index: 0;
+            animation: gridFloat 20s ease-in-out infinite alternate;
         }
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+
+        @keyframes gridFloat {
+            0% { background-position: 0% 0%, 0% 0%, 0px 0px; }
+            100% { background-position: 0% 3%, 0% -2%, 14px 14px; }
         }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+
+        img { display: block; max-width: 100%; }
+        button { font-family: inherit; }
+
+        /* ═══ Focus ═══ */
+        :focus-visible {
+            outline: 2px solid var(--dp-color-bright);
+            outline-offset: 2px;
         }
-        ::-webkit-scrollbar-track {
-            background: #111827;
+
+        /* ═══ Scrollbar ═══ */
+        ::-webkit-scrollbar       { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: var(--dp-color-panel); }
+        ::-webkit-scrollbar-thumb { background: var(--dp-color-hairline-2); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--dp-color-meta); }
+
+        /* ═══ Selection ═══ */
+        ::selection { background: rgba(63,214,198,.2); color: var(--dp-color-bright); }
+
+        /* ═══════════════════════════════════════════════════
+           ANIMATION KEYFRAMES
+           ═══════════════════════════════════════════════════ */
+
+        /* Smooth upward reveal with scale */
+        @keyframes revealUp {
+            from {
+                opacity: 0;
+                transform: translateY(22px) scale(0.985);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
-        ::-webkit-scrollbar-thumb {
-            background: #374151;
-            border-radius: 3px;
+
+        /* Subtle breathing ambient glow */
+        @keyframes ambientGlow {
+            0%, 100% {
+                box-shadow: 0 0 35px -10px rgba(63, 214, 198, 0.05), inset 0 1px 0 rgba(255,255,255,0.04);
+            }
+            50% {
+                box-shadow: 0 0 55px -6px rgba(63, 214, 198, 0.12), inset 0 1px 0 rgba(255,255,255,0.08);
+            }
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #4b5563;
+
+        /* Video laser scanning beam */
+        @keyframes scanlineSweep {
+            0% {
+                top: 0%;
+                opacity: 0;
+            }
+            15% {
+                opacity: 0.9;
+            }
+            85% {
+                opacity: 0.9;
+            }
+            100% {
+                top: 100%;
+                opacity: 0;
+            }
+        }
+
+        /* Expanding radar beacon ring */
+        @keyframes radarRipple {
+            0% {
+                transform: scale(0.9);
+                opacity: 0.9;
+            }
+            100% {
+                transform: scale(3.2);
+                opacity: 0;
+            }
+        }
+
+        /* Equalizer pulse for active detection */
+        @keyframes eqBounce {
+            0%   { height: 25%; }
+            50%  { height: 100%; }
+            100% { height: 40%; }
+        }
+
+        /* Alert arrival animation */
+        @keyframes alertArrival {
+            0% {
+                opacity: 0;
+                transform: translateX(20px) scale(0.96);
+                border-color: rgba(63, 214, 198, 0.6);
+                box-shadow: 0 0 20px -2px rgba(63, 214, 198, 0.35);
+            }
+            70% {
+                border-color: rgba(63, 214, 198, 0.4);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+                border-color: var(--dp-color-hairline);
+                box-shadow: none;
+            }
+        }
+
+        /* High threat warning pulse */
+        @keyframes threatPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(224, 82, 82, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 5px rgba(224, 82, 82, 0);
+            }
+        }
+
+        /* Modal backdrop transition */
+        @keyframes backdropIn {
+            from { opacity: 0; backdrop-filter: blur(0px); }
+            to   { opacity: 1; backdrop-filter: blur(8px); }
+        }
+        @keyframes backdropOut {
+            from { opacity: 1; backdrop-filter: blur(8px); }
+            to   { opacity: 0; backdrop-filter: blur(0px); }
+        }
+
+        /* Modal zoom spring */
+        @keyframes modalSpringIn {
+            0%   { opacity: 0; transform: translateY(24px) scale(0.94); }
+            70%  { transform: translateY(-4px) scale(1.008); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes modalSpringOut {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to   { opacity: 0; transform: translateY(16px) scale(0.96); }
+        }
+
+        /* Toast notifications */
+        @keyframes toastEnter {
+            0%   { opacity: 0; transform: translateY(20px) scale(0.9); }
+            70%  { transform: translateY(-2px) scale(1.02); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes toastExit {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to   { opacity: 0; transform: translateY(-12px) scale(0.95); }
+        }
+
+        /* Metric number count pop */
+        @keyframes metricPop {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(1.14); color: var(--dp-color-live); }
+            100% { transform: scale(1); color: var(--dp-color-bright); }
+        }
+
+        /* Spinner */
+        @keyframes spinAround {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+
+        /* Reticle corner pulse */
+        @keyframes reticleGlow {
+            0%, 100% { border-color: rgba(63, 214, 198, 0.4); }
+            50%      { border-color: rgba(63, 214, 198, 0.9); }
+        }
+
+        /* ═══ Reduced Motion Accessibility ═══ */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+            }
+            body::before { animation: none !important; }
+        }
+
+        /* ═══ Container ═══ */
+        .mx {
+            max-width: var(--dp-max);
+            width: 100%;
+            margin-inline: auto;
+            padding-inline: var(--dp-gutter);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           Header
+           ═══════════════════════════════════════════════════ */
+        .hdr {
+            position: sticky; top: 0; z-index: 40;
+            background: rgba(10, 10, 10, 0.88);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: var(--dp-border) solid var(--dp-color-hairline);
+            transition: border-color 0.3s ease;
+        }
+        .hdr-inner {
+            display: flex; align-items: center; justify-content: space-between;
+            padding-block: 14px; gap: var(--dp-gap);
+        }
+
+        /* Logo with dynamic hover tilt */
+        .logo {
+            display: flex; align-items: center; gap: 12px;
+            cursor: pointer; text-decoration: none;
+        }
+        .logo-mark {
+            width: 36px; height: 36px;
+            border-radius: var(--dp-r-panel);
+            background: linear-gradient(135deg, #1c1c1c, #0e0e0e);
+            border: 1px solid var(--dp-color-hairline-2);
+            display: grid; place-items: center;
+            color: var(--dp-color-bright); font-size: 18px;
+            flex-shrink: 0;
+            transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .logo:hover .logo-mark {
+            transform: scale(1.1) rotate(-6deg);
+            border-color: var(--dp-color-live);
+            box-shadow: 0 0 16px -2px rgba(63, 214, 198, 0.35);
+        }
+        .logo h1 {
+            font-size: 16px; font-weight: 500;
+            color: var(--dp-color-bright);
+            letter-spacing: -0.02em; line-height: 1.2;
+        }
+        .logo p {
+            font-family: var(--dp-mono);
+            font-size: 11px; color: var(--dp-color-meta);
+        }
+
+        /* Header chips */
+        .hdr-chips { display: flex; align-items: center; gap: 10px; }
+        .chip {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-family: var(--dp-mono); font-size: 11px;
+            color: var(--dp-color-dim);
+            padding: 6px 14px;
+            border: var(--dp-border) solid var(--dp-color-hairline);
+            border-radius: var(--dp-r-pill);
+            background: rgba(14, 14, 14, 0.6);
+            transition: all 0.25s ease;
+        }
+        .chip:hover {
+            border-color: var(--dp-color-hairline-2);
+            background: rgba(255, 255, 255, 0.03);
+            transform: translateY(-1px);
+        }
+        .chip .val { color: var(--dp-color-read); font-weight: 500; }
+
+        /* Animated Radar Beacon Live Dot */
+        .live-beacon {
+            position: relative;
+            width: 8px; height: 8px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .live-beacon .dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--dp-color-live);
+            z-index: 2;
+            box-shadow: 0 0 6px var(--dp-color-live);
+        }
+        .live-beacon .wave {
+            position: absolute;
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--dp-color-live);
+            animation: radarRipple 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+            z-index: 1;
+        }
+        .live-beacon .wave:nth-child(2) {
+            animation-delay: 1.2s;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           KPI Facts Row with Animated Cards
+           ═══════════════════════════════════════════════════ */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--dp-gap);
+            padding-top: var(--dp-gutter);
+            padding-bottom: var(--dp-gap);
+        }
+        .kpi {
+            background: var(--dp-color-panel);
+            border: var(--dp-border) solid var(--dp-color-hairline);
+            border-radius: var(--dp-r-panel);
+            padding: 22px 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            animation: revealUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        }
+        .kpi:nth-child(1) { animation-delay: 0.05s; }
+        .kpi:nth-child(2) { animation-delay: 0.12s; }
+        .kpi:nth-child(3) { animation-delay: 0.19s; }
+        .kpi:nth-child(4) { animation-delay: 0.26s; }
+
+        /* Top border highlight sweep */
+        .kpi::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .kpi:hover {
+            border-color: var(--dp-color-hairline-2);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px -10px rgba(0, 0, 0, 0.7), 0 0 20px -8px rgba(63, 214, 198, 0.08);
+        }
+        .kpi:hover::before { opacity: 1; }
+
+        .kpi-label {
+            font-family: var(--dp-mono);
+            font-size: 11px; color: var(--dp-color-meta);
+            text-transform: uppercase; letter-spacing: 0.06em;
+        }
+        .kpi-val {
+            font-family: var(--dp-mono);
+            font-size: 34px; font-weight: 400;
+            color: var(--dp-color-bright);
+            letter-spacing: -0.02em; line-height: 1;
+            margin-top: 10px;
+            transition: color 0.3s ease;
+        }
+        .kpi-val.pop {
+            animation: metricPop 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .kpi-note {
+            font-size: 12px; color: var(--dp-color-meta);
+            margin-top: 6px;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           Workspace Layout (12-col: 8 cols + 4 cols)
+           ═══════════════════════════════════════════════════ */
+        .ws {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--dp-gap);
+            padding-bottom: var(--dp-gutter);
+        }
+        .ws-left {
+            display: flex; flex-direction: column; gap: var(--dp-gap);
+            animation: revealUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s backwards;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           Video Panel with Tactical HUD Elements
+           ═══════════════════════════════════════════════════ */
+        .vpanel {
+            background: var(--dp-color-panel);
+            border: var(--dp-border) solid var(--dp-color-hairline);
+            border-radius: var(--dp-r-panel);
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            animation: ambientGlow 7s ease-in-out infinite;
+            transition: border-color 0.3s ease;
+            position: relative;
+        }
+        .vpanel:hover {
+            border-color: var(--dp-color-hairline-2);
+        }
+
+        /* Title bar */
+        .vbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 13px 20px;
+            border-bottom: var(--dp-border) solid var(--dp-color-hairline);
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+        }
+        .vbar-l { display: flex; align-items: center; gap: 10px; }
+        .vbar-l span.t { font-size: 13px; font-weight: 500; color: var(--dp-color-bright); }
+        .cam-tag {
+            font-family: var(--dp-mono); font-size: 11px;
+            color: var(--dp-color-meta);
+            padding: 2px 10px;
+            background: var(--dp-color-ground);
+            border: var(--dp-border) solid var(--dp-color-hairline);
+            border-radius: var(--dp-r-pill);
+            transition: all 0.2s ease;
+        }
+        .vbar-r {
+            display: flex; align-items: center; gap: 16px;
+            font-family: var(--dp-mono); font-size: 11px; color: var(--dp-color-meta);
+        }
+        .vbar-r strong { color: var(--dp-color-bright); font-weight: 500; }
+        .vbar-sep { color: var(--dp-color-hairline-2); }
+
+        /* Animated Audio-style Equalizer Bars for AI Stream Activity */
+        .eq-bars {
+            display: inline-flex;
+            align-items: flex-end;
+            gap: 2.5px;
+            height: 12px;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+        .eq-bars .bar {
+            width: 2px;
+            background: var(--dp-color-live);
+            border-radius: 1px;
+            animation: eqBounce 1.2s ease-in-out infinite alternate;
+        }
+        .eq-bars .b1 { height: 35%; animation-delay: 0.1s; }
+        .eq-bars .b2 { height: 90%; animation-delay: 0.35s; }
+        .eq-bars .b3 { height: 60%; animation-delay: 0.2s; }
+        .eq-bars .b4 { height: 100%; animation-delay: 0.5s; }
+
+        /* Video Feed Viewport */
+        .vport {
+            background: #000;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 440px; max-height: 580px;
+            overflow: hidden; position: relative;
+        }
+        .vport img {
+            width: 100%; height: 100%; object-fit: contain;
+            display: block;
+        }
+
+        /* ── Laser Scanline HUD Beam ── */
+        .hud-scanline {
+            position: absolute;
+            left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(63, 214, 198, 0.7), #ffffff, rgba(63, 214, 198, 0.7), transparent);
+            box-shadow: 0 0 14px 2px rgba(63, 214, 198, 0.5);
+            pointer-events: none;
+            z-index: 5;
+            animation: scanlineSweep 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        /* ── Tactical Reticle Corner Markers ── */
+        .hud-bracket {
+            position: absolute;
+            width: 16px; height: 16px;
+            border-color: rgba(63, 214, 198, 0.5);
+            pointer-events: none;
+            z-index: 6;
+            animation: reticleGlow 3s ease-in-out infinite;
+        }
+        .hud-tl { top: 12px; left: 14px; border-top: 2px solid; border-left: 2px solid; }
+        .hud-tr { top: 12px; right: 14px; border-top: 2px solid; border-right: 2px solid; }
+        .hud-bl { bottom: 12px; left: 14px; border-bottom: 2px solid; border-left: 2px solid; }
+        .hud-br { bottom: 12px; right: 14px; border-bottom: 2px solid; border-right: 2px solid; }
+
+        /* Video watermark */
+        .vwm {
+            position: absolute; bottom: 14px; left: 16px;
+            font-family: var(--dp-mono); font-size: 10px;
+            color: var(--dp-color-meta);
+            background: rgba(5, 5, 5, 0.85);
+            backdrop-filter: blur(6px);
+            padding: 5px 12px;
+            border-radius: var(--dp-r-panel);
+            border: var(--dp-border) solid var(--dp-color-hairline);
+            pointer-events: none;
+            z-index: 7;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* Video Controls Toolbar */
+        .vctrl {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 16px;
+            padding: 14px 20px;
+            border-top: var(--dp-border) solid var(--dp-color-hairline);
+            background: var(--dp-color-panel);
+        }
+        .vctrl-l { display: flex; align-items: center; gap: 8px; }
+
+        /* ═══════════════════════════════════════════════════
+           Pill Buttons & Dynamic Micro-Interactions
+           ═══════════════════════════════════════════════════ */
+        .btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            font-family: var(--dp-face); font-size: 12px; font-weight: 500;
+            padding: 7px 18px;
+            border-radius: var(--dp-r-pill);
+            border: var(--dp-border) solid var(--dp-color-hairline-2);
+            background: transparent; color: var(--dp-color-read);
+            cursor: pointer; white-space: nowrap;
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn:hover {
+            border-color: var(--dp-color-dim);
+            color: var(--dp-color-bright);
+            transform: translateY(-1.5px);
+            box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.5);
+        }
+        .btn:active {
+            transform: translateY(0) scale(0.97);
+        }
+        .btn i { font-size: 14px; transition: transform 0.2s ease; }
+        .btn:hover i { transform: scale(1.1); }
+
+        .btn-file { cursor: pointer; }
+        .btn-file input[type="file"] { display: none; }
+
+        .btn-primary {
+            background: var(--dp-color-bright); color: var(--dp-color-inverse-ink);
+            border-color: var(--dp-color-bright);
+        }
+        .btn-primary:hover {
+            background: #ffffff; border-color: #ffffff;
+            box-shadow: 0 4px 18px -2px rgba(242, 242, 242, 0.25);
+        }
+
+        .btn-danger {
+            background: var(--sev-high); color: #fff;
+            border-color: var(--sev-high);
+        }
+        .btn-danger:hover {
+            background: #e85d5d; border-color: #e85d5d;
+            box-shadow: 0 4px 18px -2px rgba(224, 82, 82, 0.35);
+        }
+
+        /* Range Slider */
+        .slider-g {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 12px; color: var(--dp-color-meta);
+        }
+        .slider-g input[type="range"] {
+            -webkit-appearance: none; appearance: none;
+            width: 96px; height: 4px;
+            background: var(--dp-color-hairline-2);
+            border-radius: 2px; cursor: pointer;
+            outline: none;
+            transition: background 0.2s ease;
+        }
+        .slider-g input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            background: var(--dp-color-bright);
+            border: 2px solid var(--dp-color-ground);
+            box-shadow: 0 0 0 3px rgba(242, 242, 242, 0.15);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .slider-g input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+            box-shadow: 0 0 0 5px rgba(63, 214, 198, 0.3);
+            background: var(--dp-color-live);
+        }
+        .slider-v {
+            font-family: var(--dp-mono); font-size: 12px;
+            color: var(--dp-color-bright); min-width: 32px;
+            transition: color 0.2s ease;
+        }
+
+        /* Toggle switch */
+        .tog {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; color: var(--dp-color-read); cursor: pointer;
+            user-select: none;
+        }
+        .tog input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .tog-track {
+            width: 32px; height: 18px;
+            background: var(--dp-color-hairline-2);
+            border-radius: var(--dp-r-pill);
+            position: relative; flex-shrink: 0;
+            transition: background 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+        }
+        .tog-track::after {
+            content: ''; position: absolute;
+            top: 2px; left: 2px;
+            width: 14px; height: 14px; border-radius: 50%;
+            background: var(--dp-color-dim);
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.2s ease;
+        }
+        .tog:hover .tog-track { border-color: var(--dp-color-dim); }
+        .tog input:checked + .tog-track {
+            background: rgba(63, 214, 198, 0.25);
+            box-shadow: 0 0 10px rgba(63, 214, 198, 0.2);
+        }
+        .tog input:checked + .tog-track::after {
+            transform: translateX(14px);
+            background: var(--dp-color-live);
+            box-shadow: 0 0 8px rgba(63, 214, 198, 0.5);
+        }
+
+        /* Protocol notice */
+        .notice {
+            padding: 14px 20px;
+            background: var(--dp-color-panel);
+            border: var(--dp-border) solid var(--dp-color-hairline);
+            border-radius: var(--dp-r-panel);
+            display: flex; align-items: flex-start; gap: 12px;
+            font-size: 12px; color: var(--dp-color-read); line-height: 1.55;
+            transition: border-color 0.2s ease;
+        }
+        .notice:hover { border-color: var(--dp-color-hairline-2); }
+        .notice i { color: var(--dp-color-dim); font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+        .notice strong { color: var(--dp-color-bright); font-weight: 500; }
+
+        /* ═══════════════════════════════════════════════════
+           Alert Panel (Right column)
+           ═══════════════════════════════════════════════════ */
+        .apanel {
+            background: var(--dp-color-panel);
+            border: var(--dp-border) solid var(--dp-color-hairline);
+            border-radius: var(--dp-r-panel);
+            display: flex; flex-direction: column;
+            height: 100%; min-height: 650px;
+            overflow: hidden;
+            transition: border-color 0.3s ease;
+            animation: revealUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.25s backwards;
+        }
+        .apanel:hover { border-color: var(--dp-color-hairline-2); }
+
+        .apanel-hdr {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 20px;
+            border-bottom: var(--dp-border) solid var(--dp-color-hairline);
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+        }
+        .apanel-hdr-l { display: flex; align-items: center; gap: 8px; }
+        .apanel-hdr-l i { color: var(--dp-color-dim); font-size: 16px; }
+        .apanel-hdr h2 { font-size: 13px; font-weight: 500; color: var(--dp-color-bright); }
+        .apanel-refresh {
+            font-family: var(--dp-mono); font-size: 11px;
+            color: var(--dp-color-meta); background: none; border: none;
+            cursor: pointer; display: flex; align-items: center; gap: 5px;
+            transition: color 0.2s ease;
+            padding: 4px 8px;
+            border-radius: var(--dp-r-pill);
+        }
+        .apanel-refresh:hover { color: var(--dp-color-bright); background: rgba(255,255,255,0.03); }
+        .apanel-refresh.spin i {
+            animation: spinAround 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        /* Filter Tabs with Active Underline Glide */
+        .ftabs {
+            display: flex;
+            border-bottom: var(--dp-border) solid var(--dp-color-hairline);
+            background: rgba(14, 14, 14, 0.8);
+        }
+        .ftab {
+            flex: 1; padding: 10px 0;
+            font-family: var(--dp-mono); font-size: 11px;
+            color: var(--dp-color-meta); background: none; border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer; text-align: center;
+            transition: all 0.25s ease;
+        }
+        .ftab:hover { color: var(--dp-color-read); background: rgba(255,255,255,0.015); }
+        .ftab.on {
+            color: var(--dp-color-bright);
+            border-bottom-color: var(--dp-color-bright);
+            font-weight: 500;
+        }
+
+        /* Alert list */
+        .alist {
+            flex: 1; overflow-y: auto; padding: 16px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        /* Alert Card Animation */
+        .acard {
+            padding: 14px; background: var(--dp-color-ground);
+            border: var(--dp-border) solid var(--dp-color-hairline);
+            border-radius: var(--dp-r-panel);
+            display: flex; flex-direction: column; gap: 10px;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            animation: alertArrival 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        }
+        .acard:hover {
+            border-color: var(--dp-color-hairline-2);
+            transform: translateX(-3px);
+            box-shadow: 4px 4px 16px -4px rgba(0, 0, 0, 0.6);
+        }
+
+        .acard-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+        /* Severity badges */
+        .sev {
+            font-family: var(--dp-mono); font-size: 10px; font-weight: 500;
+            padding: 3px 10px; border-radius: var(--dp-r-pill);
+            letter-spacing: 0.03em;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .sev-h {
+            color: var(--sev-high); background: var(--sev-high-bg);
+            animation: threatPulse 2.5s ease-in-out infinite;
+        }
+        .sev-m { color: var(--sev-med); background: var(--sev-med-bg); }
+        .sev-i { color: var(--sev-info); background: var(--sev-info-bg); }
+
+        /* Status badges */
+        .st {
+            font-family: var(--dp-mono); font-size: 10px;
+            padding: 3px 10px; border-radius: var(--dp-r-pill);
+            background: var(--dp-color-panel);
+        }
+        .st-pend { color: var(--sev-med); }
+        .st-flag { color: var(--sev-high); }
+        .st-dism { color: var(--sev-info); }
+
+        /* Alert body */
+        .acard-body { display: flex; align-items: flex-start; gap: 12px; }
+        .acard-thumb {
+            width: 48px; height: 48px; object-fit: cover;
+            border-radius: var(--dp-r-panel);
+            border: var(--dp-border) solid var(--dp-color-hairline);
+            flex-shrink: 0; cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .acard-thumb:hover {
+            border-color: var(--dp-color-live);
+            transform: scale(1.08);
+            box-shadow: 0 0 12px rgba(63, 214, 198, 0.3);
+        }
+        .acard-info h4 { font-size: 12px; font-weight: 500; color: var(--dp-color-bright); margin-bottom: 2px; }
+        .acard-info p { font-family: var(--dp-mono); font-size: 11px; color: var(--dp-color-meta); line-height: 1.4; }
+        .acard-info .hi { color: var(--dp-color-bright); font-weight: 500; }
+
+        /* Review button */
+        .abtn {
+            width: 100%; padding: 7px 0;
+            font-family: var(--dp-mono); font-size: 11px;
+            color: var(--dp-color-read);
+            background: var(--dp-color-panel);
+            border: var(--dp-border) solid var(--dp-color-hairline);
+            border-radius: var(--dp-r-pill);
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .abtn:hover {
+            border-color: var(--dp-color-hairline-2);
+            color: var(--dp-color-bright);
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateY(-1px);
+        }
+        .abtn:active { transform: translateY(0) scale(0.98); }
+
+        /* Empty state */
+        .empty {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 64px 20px; color: var(--dp-color-meta); text-align: center;
+            animation: revealUp 0.5s ease;
+        }
+        .empty i { font-size: 40px; margin-bottom: 10px; color: var(--dp-color-hairline-2); }
+        .empty p { font-size: 12px; }
+
+        /* ═══════════════════════════════════════════════════
+           Modal with Spring Animation
+           ═══════════════════════════════════════════════════ */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.86);
+            z-index: 50; display: none;
+            align-items: center; justify-content: center;
+            padding: var(--dp-gap);
+        }
+        .modal-overlay.open {
+            display: flex;
+            animation: backdropIn 0.25s ease forwards;
+        }
+        .modal-overlay.closing {
+            animation: backdropOut 0.2s ease forwards;
+        }
+
+        .modal {
+            background: var(--dp-color-panel);
+            border: var(--dp-border) solid var(--dp-color-hairline-2);
+            border-radius: var(--dp-r-panel);
+            max-width: 640px; width: 100%; overflow: hidden;
+            box-shadow: 0 24px 60px -15px rgba(0, 0, 0, 0.9), 0 0 30px -5px rgba(63, 214, 198, 0.1);
+            animation: modalSpringIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .modal-overlay.closing .modal {
+            animation: modalSpringOut 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .modal-hdr {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 24px;
+            border-bottom: var(--dp-border) solid var(--dp-color-hairline);
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+        }
+        .modal-hdr-l { display: flex; align-items: center; gap: 10px; }
+        .modal-hdr h3 { font-size: 14px; font-weight: 500; color: var(--dp-color-bright); }
+        .modal-x {
+            background: none; border: none;
+            color: var(--dp-color-meta); font-size: 18px; cursor: pointer; padding: 4px;
+            transition: all 0.2s ease;
+            border-radius: var(--dp-r-panel);
+        }
+        .modal-x:hover { color: var(--dp-color-bright); transform: rotate(90deg); }
+
+        .modal-body {
+            padding: 24px; max-height: 70vh; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .ev-frame {
+            border-radius: var(--dp-r-panel); overflow: hidden;
+            border: var(--dp-border) solid var(--dp-color-hairline);
+            background: #000;
+            max-height: 280px; display: flex; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .ev-frame img {
+            width: 100%; height: auto; object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+        .ev-frame:hover img { transform: scale(1.02); }
+
+        .meta-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+            padding: 16px; background: var(--dp-color-ground);
+            border: var(--dp-border) solid var(--dp-color-hairline);
+            border-radius: var(--dp-r-panel);
+        }
+        .meta-grid .lbl {
+            font-family: var(--dp-mono); font-size: 10px;
+            color: var(--dp-color-meta); text-transform: uppercase;
+            letter-spacing: 0.05em; margin-bottom: 2px;
+        }
+        .meta-grid .vl {
+            font-family: var(--dp-mono); font-size: 12px;
+            color: var(--dp-color-bright);
+        }
+
+        .modal-notes-label {
+            font-size: 12px; font-weight: 500;
+            color: var(--dp-color-read); margin-bottom: 6px; display: block;
+        }
+        .modal-ta {
+            width: 100%; background: var(--dp-color-ground);
+            border: var(--dp-border) solid var(--dp-color-hairline);
+            border-radius: var(--dp-r-panel);
+            padding: 12px; font-family: var(--dp-face);
+            font-size: 12px; color: var(--dp-color-read);
+            resize: vertical; min-height: 72px;
+            transition: all 0.25s ease;
+        }
+        .modal-ta::placeholder { color: var(--dp-color-hairline-2); }
+        .modal-ta:focus {
+            outline: none;
+            border-color: var(--dp-color-hairline-2);
+            box-shadow: 0 0 0 3px rgba(63, 214, 198, 0.15);
+        }
+
+        .modal-ft {
+            display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+            padding: 16px 24px;
+            border-top: var(--dp-border) solid var(--dp-color-hairline);
+        }
+
+        /* ═══════════════════════════════════════════════════
+           Toast Notifications
+           ═══════════════════════════════════════════════════ */
+        .toast-container {
+            position: fixed; bottom: 24px; right: 24px;
+            z-index: 60; display: flex; flex-direction: column-reverse; gap: 8px;
+            pointer-events: none;
+        }
+        .toast {
+            font-family: var(--dp-mono); font-size: 12px;
+            padding: 12px 20px;
+            background: var(--dp-color-panel);
+            border: var(--dp-border) solid var(--dp-color-hairline-2);
+            border-radius: var(--dp-r-panel);
+            color: var(--dp-color-bright);
+            display: flex; align-items: center; gap: 10px;
+            animation: toastEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            pointer-events: auto;
+            box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.8), 0 0 20px -5px rgba(63, 214, 198, 0.15);
+        }
+        .toast.out {
+            animation: toastExit 0.25s ease forwards;
+        }
+        .toast i { font-size: 16px; }
+        .toast-ok i { color: var(--sev-info); }
+        .toast-err i { color: var(--sev-high); }
+
+        /* ═══════════════════════════════════════════════════
+           Footer
+           ═══════════════════════════════════════════════════ */
+        .ftr {
+            border-top: var(--dp-border) solid var(--dp-color-hairline);
+            padding: 24px 0; margin-top: auto;
+            background: var(--dp-color-panel);
+        }
+        .ftr-inner {
+            display: flex; align-items: center; justify-content: space-between;
+            font-family: var(--dp-mono); font-size: 11px; color: var(--dp-color-meta);
+        }
+
+        /* ═══════════════════════════════════════════════════
+           Responsive
+           ═══════════════════════════════════════════════════ */
+        @media (max-width: 1180px) {
+            .mx { padding-inline: 32px; }
+        }
+        @media (max-width: 900px) {
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+            .ws { grid-template-columns: 1fr; }
+            .apanel { min-height: 0; max-height: 520px; }
+            .chip.engine { display: none; }
+        }
+        @media (max-width: 560px) {
+            .mx { padding-inline: 16px; }
+            .kpi-row { grid-template-columns: 1fr; padding-top: var(--dp-gap); }
+            .kpi-val { font-size: 26px; }
+            .hdr-inner { flex-wrap: wrap; }
+            .hdr-chips { flex-wrap: wrap; }
+            .vctrl { flex-direction: column; align-items: stretch; }
+            .vctrl-l { flex-wrap: wrap; }
+            .meta-grid { grid-template-columns: 1fr; }
+            .vbar { flex-direction: column; gap: 8px; align-items: flex-start; }
+            .ftr-inner { flex-direction: column; gap: 6px; text-align: center; }
+            .toast-container { left: 16px; right: 16px; }
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
 
-    <!-- Top Navigation Header -->
-    <header class="bg-[#111827]/80 backdrop-blur border-b border-gray-800 sticky top-0 z-40 px-6 py-3 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                <i class="ph-bold ph-shield-check text-2xl text-white"></i>
-            </div>
+<body>
+
+<!-- ═══ Header ═══ -->
+<header class="hdr">
+    <div class="mx hdr-inner">
+        <a href="/" class="logo">
+            <div class="logo-mark"><i class="ph-bold ph-shield-check"></i></div>
             <div>
-                <div class="flex items-center space-x-2">
-                    <h1 class="text-xl font-bold tracking-tight text-white">ExamGuard</h1>
-                    <span class="px-2 py-0.5 text-xs font-semibold bg-cyan-950 text-cyan-400 border border-cyan-800 rounded-full">AI Invigilator Assistant</span>
+                <h1>ExamGuard</h1>
+                <p>AI Exam Environment Monitoring</p>
+            </div>
+        </a>
+
+        <div class="hdr-chips">
+            <div class="chip">
+                <div class="live-beacon">
+                    <span class="wave"></span>
+                    <span class="wave"></span>
+                    <span class="dot"></span>
                 </div>
-                <p class="text-xs text-gray-400">Intelligent Exam Hall Anomaly & Object Monitoring System</p>
+                <span class="val" id="statusIndicator">System Active</span>
             </div>
-        </div>
-
-        <!-- System Status & Model Tags -->
-        <div class="flex items-center space-x-4">
-            <div class="flex items-center space-x-2 px-3 py-1.5 bg-gray-900 border border-gray-800 rounded-lg text-xs">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span class="text-gray-300 font-medium" id="statusIndicator">System Active</span>
+            <div class="chip engine">
+                <i class="ph ph-cpu" style="font-size:13px"></i>
+                <span class="val" id="modelTypeBadge">YOLO + ByteTrack</span>
             </div>
-
-            <div class="hidden md:flex items-center space-x-2 px-3 py-1.5 bg-gray-900 border border-gray-800 rounded-lg text-xs">
-                <i class="ph ph-cpu text-blue-400 text-sm"></i>
-                <span class="text-gray-400">Engine:</span>
-                <span class="text-blue-300 font-semibold" id="modelTypeBadge">YOLO + ByteTrack</span>
-            </div>
-
-            <div class="text-xs text-gray-400 bg-gray-900 border border-gray-800 px-3 py-1.5 rounded-lg flex items-center space-x-2">
-                <i class="ph ph-clock text-gray-400"></i>
+            <div class="chip">
+                <i class="ph ph-clock" style="font-size:13px"></i>
                 <span id="currentTimeClock">--:--:--</span>
             </div>
         </div>
-    </header>
+    </div>
+</header>
 
-    <!-- Main Container -->
-    <main class="flex-1 p-6 space-y-6 max-w-[1800px] w-full mx-auto">
+<main class="mx">
 
-        <!-- KPI Statistic Cards -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Total Alerts Card -->
-            <div class="bg-gray-900/60 border border-gray-800/80 rounded-2xl p-5 flex items-center justify-between shadow-sm">
-                <div>
-                    <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Total Alerts</p>
-                    <h3 class="text-3xl font-extrabold text-white mt-1" id="statTotalAlerts">0</h3>
-                    <p class="text-xs text-gray-500 mt-1">Detected across sessions</p>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center text-2xl">
-                    <i class="ph-bold ph-bell"></i>
-                </div>
-            </div>
+    <!-- ═══ KPI Stats Row ═══ -->
+    <section class="kpi-row">
+        <div class="kpi">
+            <div class="kpi-label">Total Alerts</div>
+            <div class="kpi-val" id="statTotalAlerts" data-count="0">0</div>
+            <div class="kpi-note">Detected across sessions</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Pending Review</div>
+            <div class="kpi-val" id="statPendingReviews" data-count="0">0</div>
+            <div class="kpi-note">Awaiting invigilator action</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Verified Infractions</div>
+            <div class="kpi-val" id="statVerifiedInfractions" data-count="0">0</div>
+            <div class="kpi-note">Confirmed unauthorized items</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Dismissed Alarms</div>
+            <div class="kpi-val" id="statDismissedAlarms" data-count="0">0</div>
+            <div class="kpi-note">Cleared by invigilator</div>
+        </div>
+    </section>
 
-            <!-- Pending Review Card -->
-            <div class="bg-gray-900/60 border border-gray-800/80 rounded-2xl p-5 flex items-center justify-between shadow-sm">
-                <div>
-                    <p class="text-xs font-medium uppercase tracking-wider text-amber-400">Pending Review</p>
-                    <h3 class="text-3xl font-extrabold text-amber-400 mt-1" id="statPendingReviews">0</h3>
-                    <p class="text-xs text-gray-500 mt-1">Awaiting invigilator action</p>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center text-2xl">
-                    <i class="ph-bold ph-hourglass-high"></i>
-                </div>
-            </div>
+    <!-- ═══ Workspace ═══ -->
+    <section class="ws">
 
-            <!-- Verified Infractions Card -->
-            <div class="bg-gray-900/60 border border-gray-800/80 rounded-2xl p-5 flex items-center justify-between shadow-sm">
-                <div>
-                    <p class="text-xs font-medium uppercase tracking-wider text-rose-400">Verified Infractions</p>
-                    <h3 class="text-3xl font-extrabold text-rose-400 mt-1" id="statVerifiedInfractions">0</h3>
-                    <p class="text-xs text-gray-500 mt-1">Confirmed unauthorized items</p>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center text-2xl">
-                    <i class="ph-bold ph-warning-octagon"></i>
-                </div>
-            </div>
-
-            <!-- False Alarms Dismissed -->
-            <div class="bg-gray-900/60 border border-gray-800/80 rounded-2xl p-5 flex items-center justify-between shadow-sm">
-                <div>
-                    <p class="text-xs font-medium uppercase tracking-wider text-emerald-400">Dismissed Alarms</p>
-                    <h3 class="text-3xl font-extrabold text-emerald-400 mt-1" id="statDismissedAlarms">0</h3>
-                    <p class="text-xs text-gray-500 mt-1">Cleared by invigilator</p>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-2xl">
-                    <i class="ph-bold ph-check-circle"></i>
-                </div>
-            </div>
-        </section>
-
-        <!-- Main Workspace: Video Feed (Left) & Alert Panel (Right) -->
-        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-            <!-- Video Monitoring Viewport (8 Columns) -->
-            <div class="lg:col-span-8 flex flex-col space-y-4">
-                <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
-                    <!-- Stream Title Bar -->
-                    <div class="bg-[#131b2e] px-4 py-3 border-b border-gray-800 flex items-center justify-between">
-                        <div class="flex items-center space-x-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
-                            <span class="text-sm font-semibold text-white">Live Monitoring Feed</span>
-                            <span class="text-xs text-gray-400 bg-gray-800/80 px-2 py-0.5 rounded" id="cameraTitleBadge">ExamHall-Cam-01</span>
+        <!-- Left: Video Monitoring Column -->
+        <div class="ws-left">
+            <div class="vpanel">
+                <!-- Title bar -->
+                <div class="vbar">
+                    <div class="vbar-l">
+                        <div class="live-beacon">
+                            <span class="wave"></span>
+                            <span class="dot"></span>
                         </div>
-                        <div class="flex items-center space-x-3 text-xs text-gray-400">
-                            <span>FPS: <strong class="text-white" id="fpsDisplay">25</strong></span>
-                            <span>|</span>
-                            <span>Detections: <strong class="text-cyan-400" id="detectionCountBadge">Active</strong></span>
-                        </div>
+                        <span class="t">Live Monitoring Feed</span>
+                        <span class="cam-tag" id="cameraTitleBadge">ExamHall-Cam-01</span>
                     </div>
-
-                    <!-- Video Container -->
-                    <div class="relative bg-black flex items-center justify-center min-h-[440px] max-h-[580px] overflow-hidden group">
-                        <img id="liveVideoFeed" src="/api/video_feed" alt="Live Camera Feed" class="w-full h-full object-contain">
-                        
-                        <!-- Watermark Overlay -->
-                        <div class="absolute bottom-3 left-4 pointer-events-none opacity-80 text-[11px] bg-black/60 backdrop-blur px-2.5 py-1 rounded border border-white/10 text-gray-300">
-                            ExamGuard AI v1.0 • Human-in-the-Loop Assistive Mode
-                        </div>
-                    </div>
-
-                    <!-- Camera & Model Controls Toolbar -->
-                    <div class="p-4 bg-[#111827] border-t border-gray-800 flex flex-wrap items-center justify-between gap-4">
-                        <div class="flex items-center space-x-2">
-                            <button onclick="switchToWebcam()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-medium rounded-lg border border-gray-700 flex items-center space-x-1.5 transition">
-                                <i class="ph ph-webcam text-cyan-400 text-sm"></i>
-                                <span>Default Webcam</span>
-                            </button>
-
-                            <label class="px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 text-xs font-medium rounded-lg border border-blue-500/30 cursor-pointer flex items-center space-x-1.5 transition">
-                                <i class="ph ph-upload text-sm"></i>
-                                <span>Upload Test Video</span>
-                                <input type="file" id="videoUploadInput" accept="video/mp4,video/avi" class="hidden" onchange="uploadVideoFile(this)">
-                            </label>
-                        </div>
-
-                        <!-- Sensitivity / Confidence Slider -->
-                        <div class="flex items-center space-x-3 text-xs">
-                            <span class="text-gray-400">Confidence Threshold:</span>
-                            <input type="range" id="confSlider" min="0.10" max="0.90" step="0.05" value="0.30" class="w-28 accent-cyan-500 cursor-pointer" oninput="updateConfidence(this.value)">
-                            <span class="font-bold text-cyan-400 w-8" id="confValueLabel">30%</span>
-                        </div>
-
-                        <!-- ByteTrack Toggle -->
-                        <div class="flex items-center space-x-2 text-xs">
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="trackingToggle" checked class="sr-only peer" onchange="toggleTracking(this.checked)">
-                                <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-600"></div>
-                                <span class="ml-2 text-gray-300">ByteTrack Tracking</span>
-                            </label>
+                    <div class="vbar-r">
+                        <span>FPS <strong id="fpsDisplay">25</strong></span>
+                        <span class="vbar-sep">|</span>
+                        <span>Detections <strong id="detectionCountBadge">Active</strong></span>
+                        <div class="eq-bars">
+                            <span class="bar b1"></span>
+                            <span class="bar b2"></span>
+                            <span class="bar b3"></span>
+                            <span class="bar b4"></span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Guidance / College Notice Alert -->
-                <div class="bg-blue-950/30 border border-blue-800/40 rounded-xl p-3.5 flex items-start space-x-3 text-xs text-blue-200">
-                    <i class="ph-bold ph-info text-blue-400 text-lg flex-shrink-0 mt-0.5"></i>
-                    <div>
-                        <strong class="text-blue-300">College Examination Protocol:</strong>
-                        AI alerts serve strictly as situational awareness for human invigilators. An alert highlights potential unauthorized items (e.g. mobile phones, cheat notes). Always perform visual or physical verification before taking disciplinary action.
-                    </div>
-                </div>
-            </div>
-
-            <!-- Real-Time Alerts & Review Panel (4 Columns) -->
-            <div class="lg:col-span-4 flex flex-col space-y-4">
-                <div class="bg-gray-900 border border-gray-800 rounded-2xl flex flex-col h-[650px] shadow-xl overflow-hidden">
+                <!-- Feed Viewport with HUD Laser Scanline & Brackets -->
+                <div class="vport">
+                    <div class="hud-scanline"></div>
+                    <div class="hud-bracket hud-tl"></div>
+                    <div class="hud-bracket hud-tr"></div>
+                    <div class="hud-bracket hud-bl"></div>
+                    <div class="hud-bracket hud-br"></div>
                     
-                    <!-- Panel Header -->
-                    <div class="p-4 border-b border-gray-800 flex items-center justify-between bg-[#131b2e]">
-                        <div class="flex items-center space-x-2">
-                            <i class="ph-bold ph-warning text-amber-400 text-lg"></i>
-                            <h2 class="font-bold text-white text-sm">Real-Time Alert Feed</h2>
-                        </div>
-                        <button onclick="fetchAlerts()" class="text-xs text-gray-400 hover:text-cyan-400 transition flex items-center space-x-1">
-                            <i class="ph ph-arrows-clockwise text-sm"></i>
-                            <span>Refresh</span>
+                    <img id="liveVideoFeed" src="/api/video_feed" alt="Live Camera Feed">
+                    <div class="vwm">
+                        <span class="live-beacon" style="width:6px;height:6px"><span class="dot" style="width:5px;height:5px"></span></span>
+                        ExamGuard AI v1.0 · Human-in-the-Loop Active
+                    </div>
+                </div>
+
+                <!-- Controls Toolbar -->
+                <div class="vctrl">
+                    <div class="vctrl-l">
+                        <button onclick="switchToWebcam()" class="btn">
+                            <i class="ph ph-webcam"></i><span>Webcam</span>
                         </button>
+                        <label class="btn btn-file">
+                            <i class="ph ph-upload"></i><span>Upload Video</span>
+                            <input type="file" id="videoUploadInput" accept="video/mp4,video/avi" onchange="uploadVideoFile(this)">
+                        </label>
                     </div>
 
-                    <!-- Severity Filter Tabs -->
-                    <div class="flex border-b border-gray-800 bg-[#0f1422] text-xs font-medium">
-                        <button onclick="setFilter('ALL')" id="filterBtnALL" class="flex-1 py-2 text-cyan-400 border-b-2 border-cyan-500">All</button>
-                        <button onclick="setFilter('PENDING')" id="filterBtnPENDING" class="flex-1 py-2 text-gray-400 hover:text-gray-200">Pending</button>
-                        <button onclick="setFilter('HIGH')" id="filterBtnHIGH" class="flex-1 py-2 text-gray-400 hover:text-gray-200">High Risk</button>
+                    <div class="slider-g">
+                        <span>Confidence</span>
+                        <input type="range" id="confSlider" min="0.10" max="0.90" step="0.05" value="0.20" oninput="updateConfidence(this.value)">
+                        <span class="slider-v" id="confValueLabel">20%</span>
                     </div>
 
-                    <!-- Alert Cards List -->
-                    <div id="alertsContainer" class="flex-1 overflow-y-auto p-4 space-y-3">
-                        <!-- Populated by JavaScript -->
-                        <div class="text-center py-16 text-gray-500 text-xs">
-                            <i class="ph ph-shield-check text-4xl mb-2 text-gray-600"></i>
-                            <p>No active alerts. Monitoring examination hall...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Human-in-the-Loop Review Modal -->
-    <div id="reviewModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-gray-900 border border-gray-800 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl">
-            <!-- Modal Header -->
-            <div class="bg-[#131b2e] px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <span id="modalSeverityBadge" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-red-600/20 text-red-400 border border-red-500/30">HIGH ALERT</span>
-                    <h3 class="font-bold text-white" id="modalAlertTitle">Mobile Phone Detected</h3>
-                </div>
-                <button onclick="closeReviewModal()" class="text-gray-400 hover:text-white text-xl">
-                    <i class="ph ph-x"></i>
-                </button>
-            </div>
-
-            <!-- Modal Content -->
-            <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
-                <!-- Evidence Snapshot Preview -->
-                <div class="rounded-xl overflow-hidden border border-gray-800 bg-black max-h-72 flex items-center justify-center">
-                    <img id="modalEvidenceImg" src="" alt="Evidence Snapshot" class="w-full h-auto object-contain">
-                </div>
-
-                <!-- Incident Metadata Grid -->
-                <div class="grid grid-cols-2 gap-3 text-xs bg-gray-950/60 p-3.5 rounded-xl border border-gray-800">
-                    <div>
-                        <span class="text-gray-500">Alert Reference ID:</span>
-                        <p class="font-mono text-cyan-400 font-semibold" id="modalAlertId">ALT-000</p>
-                    </div>
-                    <div>
-                        <span class="text-gray-500">Timestamp:</span>
-                        <p class="text-gray-300" id="modalTimestamp">--</p>
-                    </div>
-                    <div>
-                        <span class="text-gray-500">AI Confidence:</span>
-                        <p class="text-emerald-400 font-semibold" id="modalConfidence">--%</p>
-                    </div>
-                    <div>
-                        <span class="text-gray-500">Camera / Hall:</span>
-                        <p class="text-gray-300" id="modalCamera">ExamHall-Cam-01</p>
-                    </div>
-                </div>
-
-                <!-- Invigilator Notes Input -->
-                <div class="space-y-1.5">
-                    <label class="text-xs font-medium text-gray-300">Invigilator Observation & Notes:</label>
-                    <textarea id="modalNotesInput" rows="3" placeholder="e.g. Inspected candidate desk. Verified mobile phone in lap, confiscated as per exam rulebook." class="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-xs text-gray-200 placeholder-gray-600 focus:outline-none focus:border-cyan-500"></textarea>
+                    <label class="tog">
+                        <input type="checkbox" id="trackingToggle" checked onchange="toggleTracking(this.checked)">
+                        <div class="tog-track"></div>
+                        <span>ByteTrack</span>
+                    </label>
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="bg-[#111827] px-6 py-4 border-t border-gray-800 flex items-center justify-end space-x-3">
-                <button onclick="closeReviewModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-medium rounded-xl transition">Cancel</button>
-                <button onclick="submitReview('DISMISSED_FALSE_ALARM')" class="px-4 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-300 text-xs font-semibold rounded-xl transition flex items-center space-x-1.5">
-                    <i class="ph-bold ph-check"></i>
-                    <span>Dismiss (False Alarm)</span>
-                </button>
-                <button onclick="submitReview('FLAGGED_INFRACTION')" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-rose-600/20 transition flex items-center space-x-1.5">
-                    <i class="ph-bold ph-shield-warning"></i>
-                    <span>Confirm Infraction</span>
-                </button>
+            <!-- College Examination Protocol notice -->
+            <div class="notice">
+                <i class="ph-bold ph-info"></i>
+                <div>
+                    <strong>College Examination Protocol:</strong>
+                    AI alerts serve strictly as situational awareness for human invigilators. An alert highlights potential unauthorized items (e.g. mobile phones, cheat notes). Always perform visual or physical verification before taking disciplinary action.
+                </div>
             </div>
         </div>
+
+        <!-- Right: Real-time Alert Panel -->
+        <div class="apanel">
+            <div class="apanel-hdr">
+                <div class="apanel-hdr-l">
+                    <i class="ph-bold ph-warning"></i>
+                    <h2>Alert Feed</h2>
+                </div>
+                <button onclick="refreshAlerts()" class="apanel-refresh" id="refreshBtn">
+                    <i class="ph ph-arrows-clockwise" style="font-size:13px"></i>
+                    <span>Refresh</span>
+                </button>
+            </div>
+
+            <div class="ftabs">
+                <button onclick="setFilter('ALL')"     id="filterBtnALL"     class="ftab on">All</button>
+                <button onclick="setFilter('PENDING')"  id="filterBtnPENDING"  class="ftab">Pending</button>
+                <button onclick="setFilter('HIGH')"     id="filterBtnHIGH"     class="ftab">High Risk</button>
+            </div>
+
+            <div id="alertsContainer" class="alist">
+                <div class="empty">
+                    <i class="ph ph-shield-check"></i>
+                    <p>No active alerts. Monitoring examination hall…</p>
+                </div>
+            </div>
+        </div>
+
+    </section>
+</main>
+
+<!-- ═══ Footer ═══ -->
+<footer class="ftr">
+    <div class="mx ftr-inner">
+        <span>ExamGuard · AI-Based Exam Environment Monitoring</span>
+        <span>B.Tech CSE-AIML · Human-in-the-Loop Assistive Platform</span>
     </div>
+</footer>
 
-    <!-- Script Application Logic -->
-    <script>
-        let currentAlerts = [];
-        let activeFilter = 'ALL';
-        let selectedAlertId = null;
+<!-- ═══ Review Modal ═══ -->
+<div id="reviewModal" class="modal-overlay" onclick="if(event.target===this)closeReviewModal()">
+    <div class="modal" role="dialog" aria-labelledby="modalAlertTitle">
+        <div class="modal-hdr">
+            <div class="modal-hdr-l">
+                <span id="modalSeverityBadge" class="sev sev-h">HIGH</span>
+                <h3 id="modalAlertTitle">Mobile Phone Detected</h3>
+            </div>
+            <button onclick="closeReviewModal()" class="modal-x" aria-label="Close">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
 
-        // Clock update
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('currentTimeClock').innerText = now.toLocaleTimeString();
-        }, 1000);
+        <div class="modal-body">
+            <div class="ev-frame">
+                <img id="modalEvidenceImg" src="" alt="Evidence Snapshot">
+            </div>
 
-        // Fetch System Stats & Alerts on interval
-        async function fetchStats() {
-            try {
-                const res = await fetch('/api/stats');
-                const data = await res.json();
-                document.getElementById('statTotalAlerts').innerText = data.total_alerts || 0;
-                document.getElementById('statPendingReviews').innerText = data.pending_reviews || 0;
-                document.getElementById('statVerifiedInfractions').innerText = data.verified_infractions || 0;
-                document.getElementById('statDismissedAlarms').innerText = data.dismissed_false_alarms || 0;
-            } catch (e) {
-                console.error("Failed to fetch stats", e);
+            <div class="meta-grid">
+                <div><div class="lbl">Alert ID</div><div class="vl" id="modalAlertId">ALT-000</div></div>
+                <div><div class="lbl">Timestamp</div><div class="vl" id="modalTimestamp">--</div></div>
+                <div><div class="lbl">AI Confidence</div><div class="vl" id="modalConfidence">--%</div></div>
+                <div><div class="lbl">Camera / Hall</div><div class="vl" id="modalCamera">ExamHall-Cam-01</div></div>
+            </div>
+
+            <div>
+                <label class="modal-notes-label" for="modalNotesInput">Invigilator Observation &amp; Notes</label>
+                <textarea id="modalNotesInput" class="modal-ta" rows="3"
+                    placeholder="e.g. Inspected candidate desk. Verified mobile phone in lap, confiscated as per exam rulebook."></textarea>
+            </div>
+        </div>
+
+        <div class="modal-ft">
+            <button onclick="closeReviewModal()" class="btn">Cancel</button>
+            <button onclick="submitReview('DISMISSED_FALSE_ALARM')" class="btn">
+                <i class="ph-bold ph-check"></i><span>Dismiss</span>
+            </button>
+            <button onclick="submitReview('FLAGGED_INFRACTION')" class="btn btn-danger">
+                <i class="ph-bold ph-shield-warning"></i><span>Confirm Infraction</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Toast Notifications ═══ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ═══════════════════════════════════════════════════
+     Application Logic & Dynamic Interactivity
+     ═══════════════════════════════════════════════════ -->
+<script>
+    let currentAlerts = [];
+    let activeFilter = 'ALL';
+    let selectedAlertId = null;
+
+    /* Animated Counter Function */
+    function animateCount(el, target) {
+        const current = parseInt(el.dataset.count || '0', 10);
+        if (current === target) return;
+
+        el.dataset.count = target;
+        const duration = 400;
+        const start = performance.now();
+
+        function step(now) {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const value = Math.round(current + (target - current) * eased);
+            el.innerText = value;
+            if (progress < 1) {
+                requestAnimationFrame(step);
+            } else {
+                el.innerText = target;
+                el.classList.add('pop');
+                setTimeout(() => el.classList.remove('pop'), 450);
             }
         }
+        requestAnimationFrame(step);
+    }
 
-        async function fetchStatus() {
-            try {
-                const res = await fetch('/api/status');
-                const data = await res.json();
-                document.getElementById('fpsDisplay').innerText = data.fps || 25;
-                document.getElementById('cameraTitleBadge').innerText = data.camera_id || 'ExamHall-Cam-01';
-                if (data.is_custom_model) {
-                    document.getElementById('modelTypeBadge').innerText = "Custom Exam Stationery";
-                }
-            } catch (e) {
-                console.error("Failed to fetch status", e);
-            }
+    /* Toast Notification System */
+    function showToast(message, type = 'ok') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        const icon = type === 'ok' ? 'ph-bold ph-check-circle' : 'ph-bold ph-warning-circle';
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `<i class="${icon}"></i><span>${message}</span>`;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.add('out');
+            toast.addEventListener('animationend', () => toast.remove());
+        }, 3200);
+    }
+
+    /* System Clock */
+    setInterval(() => {
+        document.getElementById('currentTimeClock').innerText = new Date().toLocaleTimeString();
+    }, 1000);
+
+    /* Fetch System Stats */
+    async function fetchStats() {
+        try {
+            const res = await fetch('/api/stats');
+            const data = await res.json();
+            animateCount(document.getElementById('statTotalAlerts'), data.total_alerts || 0);
+            animateCount(document.getElementById('statPendingReviews'), data.pending_reviews || 0);
+            animateCount(document.getElementById('statVerifiedInfractions'), data.verified_infractions || 0);
+            animateCount(document.getElementById('statDismissedAlarms'), data.dismissed_false_alarms || 0);
+        } catch (e) {
+            console.error("Failed to fetch stats", e);
         }
+    }
 
-        async function fetchAlerts() {
-            try {
-                const res = await fetch('/api/alerts?limit=30');
-                const data = await res.json();
-                currentAlerts = data.alerts || [];
-                renderAlerts();
-            } catch (e) {
-                console.error("Failed to fetch alerts", e);
+    /* Fetch System Status */
+    async function fetchStatus() {
+        try {
+            const res = await fetch('/api/status');
+            const data = await res.json();
+            document.getElementById('fpsDisplay').innerText = data.fps || 25;
+            document.getElementById('cameraTitleBadge').innerText = data.camera_id || 'ExamHall-Cam-01';
+            if (data.is_custom_model) {
+                document.getElementById('modelTypeBadge').innerText = "Custom Exam Stationery";
             }
+        } catch (e) {
+            console.error("Failed to fetch status", e);
         }
+    }
 
-        function setFilter(filter) {
-            activeFilter = filter;
-            ['ALL', 'PENDING', 'HIGH'].forEach(f => {
-                const btn = document.getElementById(`filterBtn${f}`);
-                if (f === filter) {
-                    btn.className = "flex-1 py-2 text-cyan-400 border-b-2 border-cyan-500 font-bold";
-                } else {
-                    btn.className = "flex-1 py-2 text-gray-400 hover:text-gray-200";
-                }
-            });
+    /* Fetch Alerts */
+    async function fetchAlerts() {
+        try {
+            const res = await fetch('/api/alerts?limit=30');
+            const data = await res.json();
+            currentAlerts = data.alerts || [];
             renderAlerts();
+        } catch (e) {
+            console.error("Failed to fetch alerts", e);
+        }
+    }
+
+    /* Manual Refresh with Spin Animation */
+    function refreshAlerts() {
+        const btn = document.getElementById('refreshBtn');
+        btn.classList.add('spin');
+        fetchAlerts().finally(() => {
+            setTimeout(() => btn.classList.remove('spin'), 600);
+        });
+    }
+
+    /* Filter Tabs */
+    function setFilter(filter) {
+        activeFilter = filter;
+        ['ALL', 'PENDING', 'HIGH'].forEach(f => {
+            const btn = document.getElementById(`filterBtn${f}`);
+            btn.className = f === filter ? 'ftab on' : 'ftab';
+        });
+        renderAlerts();
+    }
+
+    /* Render Dynamic Alert Cards */
+    function renderAlerts() {
+        const container = document.getElementById('alertsContainer');
+        let filtered = currentAlerts;
+        if (activeFilter === 'PENDING') {
+            filtered = currentAlerts.filter(a => a.review_status === 'PENDING');
+        } else if (activeFilter === 'HIGH') {
+            filtered = currentAlerts.filter(a => a.severity === 'HIGH');
         }
 
-        function renderAlerts() {
-            const container = document.getElementById('alertsContainer');
-            let filtered = currentAlerts;
-            if (activeFilter === 'PENDING') {
-                filtered = currentAlerts.filter(a => a.review_status === 'PENDING');
-            } else if (activeFilter === 'HIGH') {
-                filtered = currentAlerts.filter(a => a.severity === 'HIGH');
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div class="empty">
+                    <i class="ph ph-shield-check"></i>
+                    <p>No alerts in this category.</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = filtered.map((alert, idx) => {
+            let sevCls = 'sev-h';
+            if (alert.severity === 'MEDIUM') sevCls = 'sev-m';
+            if (alert.severity === 'INFO')   sevCls = 'sev-i';
+
+            let stHtml = `<span class="st st-pend">Pending Review</span>`;
+            if (alert.review_status === 'FLAGGED_INFRACTION') {
+                stHtml = `<span class="st st-flag">Confirmed Infraction</span>`;
+            } else if (alert.review_status === 'DISMISSED_FALSE_ALARM') {
+                stHtml = `<span class="st st-dism">Dismissed</span>`;
             }
 
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-16 text-gray-500 text-xs">
-                        <i class="ph ph-shield-check text-4xl mb-2 text-gray-600"></i>
-                        <p>No alerts in this category.</p>
+            const evidenceUrl = alert.evidence_path ? `/api/${alert.evidence_path}` : '';
+            const delay = Math.min(idx * 0.05, 0.4);
+
+            return `
+                <div class="acard" style="animation-delay: ${delay}s">
+                    <div class="acard-top">
+                        <span class="sev ${sevCls}">${alert.severity} RISK</span>
+                        ${stHtml}
                     </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = filtered.map(alert => {
-                let badgeColor = "bg-rose-500/20 text-rose-400 border-rose-500/30";
-                if (alert.severity === 'MEDIUM') badgeColor = "bg-amber-500/20 text-amber-400 border-amber-500/30";
-                if (alert.severity === 'INFO') badgeColor = "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
-
-                let statusBadge = `<span class="px-2 py-0.5 text-[10px] rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">Pending Review</span>`;
-                if (alert.review_status === 'FLAGGED_INFRACTION') {
-                    statusBadge = `<span class="px-2 py-0.5 text-[10px] rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 font-semibold">Confirmed Infraction</span>`;
-                } else if (alert.review_status === 'DISMISSED_FALSE_ALARM') {
-                    statusBadge = `<span class="px-2 py-0.5 text-[10px] rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Dismissed</span>`;
-                }
-
-                const evidenceUrl = alert.evidence_path ? `/api/${alert.evidence_path}` : '';
-
-                return `
-                    <div class="p-3 bg-gray-950/70 border border-gray-800/80 rounded-xl hover:border-gray-700 transition flex flex-col space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="px-2 py-0.5 text-[10px] font-bold rounded border ${badgeColor}">
-                                ${alert.severity} RISK
-                            </span>
-                            ${statusBadge}
+                    <div class="acard-body">
+                        ${evidenceUrl ? `<img src="${evidenceUrl}" alt="Evidence" class="acard-thumb" onclick="openReviewModal('${alert.alert_id}')">` : ''}
+                        <div class="acard-info">
+                            <h4>${alert.object_label}</h4>
+                            <p>Confidence <span class="hi">${Math.round(alert.confidence * 100)}%</span></p>
+                            <p>${new Date(alert.timestamp).toLocaleTimeString()}</p>
                         </div>
-
-                        <div class="flex items-start space-x-3">
-                            ${evidenceUrl ? `
-                                <img src="${evidenceUrl}" alt="Evidence" class="w-14 h-14 object-cover rounded-lg border border-gray-800 flex-shrink-0 cursor-pointer" onclick="openReviewModal('${alert.alert_id}')">
-                            ` : ''}
-                            <div class="flex-1 min-w-0">
-                                <h4 class="text-xs font-bold text-white truncate">${alert.object_label}</h4>
-                                <p class="text-[11px] text-gray-400">Confidence: <span class="text-cyan-400 font-semibold">${Math.round(alert.confidence * 100)}%</span></p>
-                                <p class="text-[10px] text-gray-500">${new Date(alert.timestamp).toLocaleTimeString()}</p>
-                            </div>
-                        </div>
-
-                        <button onclick="openReviewModal('${alert.alert_id}')" class="w-full py-1.5 bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-200 text-xs font-medium rounded-lg transition flex items-center justify-center space-x-1">
-                            <i class="ph ph-magnifying-glass text-xs"></i>
-                            <span>Inspect & Review</span>
-                        </button>
                     </div>
-                `;
-            }).join('');
-        }
+                    <button onclick="openReviewModal('${alert.alert_id}')" class="abtn">
+                        <i class="ph ph-magnifying-glass" style="font-size:12px"></i>
+                        <span>Inspect &amp; Review</span>
+                    </button>
+                </div>`;
+        }).join('');
+    }
 
-        function openReviewModal(alertId) {
-            const alert = currentAlerts.find(a => a.alert_id === alertId);
-            if (!alert) return;
-            selectedAlertId = alertId;
+    /* Modal Inspection Actions */
+    function openReviewModal(alertId) {
+        const alert = currentAlerts.find(a => a.alert_id === alertId);
+        if (!alert) return;
+        selectedAlertId = alertId;
 
-            document.getElementById('modalAlertId').innerText = alert.alert_id;
-            document.getElementById('modalAlertTitle').innerText = `${alert.object_label} Detected`;
-            document.getElementById('modalConfidence').innerText = `${Math.round(alert.confidence * 100)}%`;
-            document.getElementById('modalTimestamp').innerText = new Date(alert.timestamp).toLocaleString();
-            document.getElementById('modalCamera').innerText = alert.camera_id;
-            document.getElementById('modalNotesInput').value = alert.invigilator_notes || '';
-            document.getElementById('modalEvidenceImg').src = `/api/${alert.evidence_path}`;
+        document.getElementById('modalAlertId').innerText = alert.alert_id;
+        document.getElementById('modalAlertTitle').innerText = `${alert.object_label} Detected`;
+        document.getElementById('modalConfidence').innerText = `${Math.round(alert.confidence * 100)}%`;
+        document.getElementById('modalTimestamp').innerText = new Date(alert.timestamp).toLocaleString();
+        document.getElementById('modalCamera').innerText = alert.camera_id;
+        document.getElementById('modalNotesInput').value = alert.invigilator_notes || '';
+        document.getElementById('modalEvidenceImg').src = `/api/${alert.evidence_path}`;
 
-            const badge = document.getElementById('modalSeverityBadge');
-            badge.innerText = `${alert.severity} SEVERITY`;
+        const badge = document.getElementById('modalSeverityBadge');
+        badge.innerText = alert.severity;
+        badge.className = 'sev ' + (alert.severity === 'HIGH' ? 'sev-h' : alert.severity === 'MEDIUM' ? 'sev-m' : 'sev-i');
 
-            document.getElementById('reviewModal').classList.remove('hidden');
-        }
+        const overlay = document.getElementById('reviewModal');
+        overlay.classList.remove('closing');
+        overlay.classList.add('open');
 
-        function closeReviewModal() {
-            document.getElementById('reviewModal').classList.add('hidden');
+        setTimeout(() => overlay.querySelector('.modal-x')?.focus(), 100);
+    }
+
+    function closeReviewModal() {
+        const overlay = document.getElementById('reviewModal');
+        overlay.classList.add('closing');
+        setTimeout(() => {
+            overlay.classList.remove('open', 'closing');
             selectedAlertId = null;
+        }, 200);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && document.getElementById('reviewModal').classList.contains('open')) {
+            closeReviewModal();
         }
+    });
 
-        async function submitReview(status) {
-            if (!selectedAlertId) return;
-            const notes = document.getElementById('modalNotesInput').value;
+    async function submitReview(status) {
+        if (!selectedAlertId) return;
+        const notes = document.getElementById('modalNotesInput').value;
 
-            try {
-                await fetch(`/api/alerts/${selectedAlertId}/review`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        review_status: status,
-                        invigilator_notes: notes,
-                        reviewer: 'ExamInvigilator'
-                    })
-                });
+        try {
+            await fetch(`/api/alerts/${selectedAlertId}/review`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    review_status: status,
+                    invigilator_notes: notes,
+                    reviewer: 'ExamInvigilator'
+                })
+            });
 
-                closeReviewModal();
-                fetchStats();
-                fetchAlerts();
-            } catch (e) {
-                alert("Failed to submit review");
+            closeReviewModal();
+            fetchStats();
+            fetchAlerts();
+
+            if (status === 'FLAGGED_INFRACTION') {
+                showToast('Infraction confirmed and logged', 'ok');
+            } else {
+                showToast('Alert dismissed as false alarm', 'ok');
             }
+        } catch (e) {
+            showToast('Failed to submit review', 'err');
         }
+    }
 
-        async function updateConfidence(val) {
-            document.getElementById('confValueLabel').innerText = `${Math.round(val * 100)}%`;
-            await fetch('/api/camera/control', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({confidence_threshold: parseFloat(val)})
-            });
-        }
+    /* Controls API calls */
+    async function updateConfidence(val) {
+        document.getElementById('confValueLabel').innerText = `${Math.round(val * 100)}%`;
+        await fetch('/api/camera/control', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({confidence_threshold: parseFloat(val)})
+        });
+    }
 
-        async function toggleTracking(enabled) {
-            await fetch('/api/camera/control', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({enable_tracking: enabled})
-            });
-        }
+    async function toggleTracking(enabled) {
+        await fetch('/api/camera/control', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({enable_tracking: enabled})
+        });
+        showToast(enabled ? 'ByteTrack tracking enabled' : 'ByteTrack tracking disabled', 'ok');
+    }
 
-        async function switchToWebcam() {
-            await fetch('/api/camera/control', {
+    async function switchToWebcam() {
+        await fetch('/api/camera/control', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({source: "0"})
+        });
+        document.getElementById('liveVideoFeed').src = `/api/video_feed?t=${Date.now()}`;
+        showToast('Switching to webcam…', 'ok');
+    }
+
+    async function uploadVideoFile(input) {
+        if (!input.files || input.files.length === 0) return;
+        const file = input.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        showToast(`Uploading "${file.name}"…`, 'ok');
+
+        try {
+            const res = await fetch('/api/upload_video', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({source: "0"})
+                body: formData
             });
+            const data = await res.json();
+            showToast(`"${data.filename}" uploaded — stream switched`, 'ok');
             document.getElementById('liveVideoFeed').src = `/api/video_feed?t=${Date.now()}`;
+        } catch (e) {
+            showToast('Failed to upload video file', 'err');
         }
+    }
 
-        async function uploadVideoFile(input) {
-            if (!input.files || input.files.length === 0) return;
-            const file = input.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
+    /* Polling Intervals */
+    setInterval(fetchStats,  3000);
+    setInterval(fetchStatus, 4000);
+    setInterval(fetchAlerts, 2500);
 
-            try {
-                const res = await fetch('/api/upload_video', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await res.json();
-                alert(`Video "${data.filename}" uploaded successfully! Switching stream.`);
-                document.getElementById('liveVideoFeed').src = `/api/video_feed?t=${Date.now()}`;
-            } catch (e) {
-                alert("Failed to upload video file.");
-            }
-        }
+    /* Initial Load */
+    fetchStats();
+    fetchStatus();
+    fetchAlerts();
+</script>
 
-        // Auto polling loops
-        setInterval(fetchStats, 3000);
-        setInterval(fetchStatus, 4000);
-        setInterval(fetchAlerts, 2500);
-
-        // Initial fetch
-        fetchStats();
-        fetchStatus();
-        fetchAlerts();
-    </script>
 </body>
 </html>
-
