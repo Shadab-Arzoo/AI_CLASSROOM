@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "ExamGuard - AI-Based Exam Environment Monitoring System",
   "main": "electron/main.js",
-  "author": "Shadab Arzoo",
+  "author": {
+    "name": "Shadab Arzoo",
+    "email": "shadabarzoo@users.noreply.github.com"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -40,6 +43,7 @@
       "package.json"
     ],
     "linux": {
+      "maintainer": "Shadab Arzoo <shadabarzoo@users.noreply.github.com>",
       "target": [
         "AppImage",
         "deb"
