@@ -47,6 +47,7 @@ jobs:
       - name: Build Electron App (${{ matrix.platform }})
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
         run: npx electron-builder ${{ matrix.args }}
 
       - name: Upload Artifacts

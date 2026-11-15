@@ -22,7 +22,7 @@ data/alerts_evidence/*.jpg
 # Node.js & Electron
 node_modules/
 dist/
-package-lock.json
+release/
 
 # Large Datasets (Keep raw data local)
 data/raw/
