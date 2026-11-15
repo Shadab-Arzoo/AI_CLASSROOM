@@ -145,13 +145,23 @@ CLASS_CONFIG = {
         "description": "Calculator (Verify if allowed in this exam)",
         "color": (0, 165, 255),
     },
+    "candidate_absence": {
+        "severity": "HIGH",
+        "label": "Candidate Absent / Left Desk",
+        "description": "Candidate not detected at exam desk for extended duration",
+        "color": (0, 0, 255),
+    },
 }
 
 # Detection & Tracking Thresholds
-DEFAULT_CONF_THRESHOLD = 0.20  # Optimized for real-world webcam conditions
-DEFAULT_IOU_THRESHOLD = 0.40
-ALERT_COOLDOWN_SECONDS = 3.0  # Avoid duplicate alerts for the same track within 3 seconds
-MIN_DETECTION_FRAMES = 2      # Fast confirmation for moving exam items
+DEFAULT_CONF_THRESHOLD = 0.25  # Raised from 0.20 to reduce false positives
+DEFAULT_IOU_THRESHOLD = 0.38   # Tighter overlap threshold for cleaner NMS
+ALERT_COOLDOWN_SECONDS = 3.0   # Avoid duplicate alerts for the same track within 3 seconds
+MIN_DETECTION_FRAMES = 3       # Require 3 frames (was 2) before confirming a detection
+
+# Candidate Absence Monitoring
+DEFAULT_ABSENCE_MONITOR_ENABLED = False  # Disabled by default until admin turns on toggle
+DEFAULT_ABSENCE_GRACE_SECONDS = 5.0      # Flag absence after 5 seconds of empty desk
 
 # Camera Settings
 DEFAULT_CAMERA_ID = "ExamHall-Cam-01"

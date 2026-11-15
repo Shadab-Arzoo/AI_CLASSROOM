@@ -19,6 +19,11 @@ runs/
 examguard.db
 data/alerts_evidence/*.jpg
 
+# Node.js & Electron
+node_modules/
+dist/
+package-lock.json
+
 # Large Datasets (Keep raw data local)
 data/raw/
 data/processed/

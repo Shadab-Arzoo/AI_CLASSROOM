@@ -30,8 +30,9 @@ def main():
     print(" * Database: SQLite (Persistent Incident Records)")
     print("=" * 65)
 
-    # Launch browser in a background thread
-    threading.Thread(target=open_browser, args=(port,), daemon=True).start()
+    # Launch browser in a background thread if not disabled (e.g. when run from Electron)
+    if "--no-browser" not in sys.argv:
+        threading.Thread(target=open_browser, args=(port,), daemon=True).start()
 
     # Start Uvicorn Server
     try:

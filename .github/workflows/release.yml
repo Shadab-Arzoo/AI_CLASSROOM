@@ -1,0 +1,146 @@
+name: Multi-Platform Release Build
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            args: --linux AppImage deb
+          - os: windows-latest
+            platform: win
+            args: --win nsis zip
+          - os: macos-latest
+            platform: mac
+            args: --mac dmg zip
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Node Dependencies
+        run: npm install
+
+      - name: Build Electron App (${{ matrix.platform }})
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder ${{ matrix.args }}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.platform }}
+          path: |
+            release/*.AppImage
+            release/*.deb
+            release/*.exe
+            release/*.dmg
+            release/*.zip
+          if-no-files-found: ignore
+
+  create-release:
+    name: Publish Multi-Platform GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist-release
+          merge-multiple: true
+
+      - name: Extract Metadata & Version
+        id: meta
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          COMMIT_MSG=$(git log -1 --pretty=%B | head -n 1)
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          DATE_STR=$(date -u +"%Y-%m-%d")
+          
+          # If triggered by a tag, use tag, otherwise use version + commit
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG_NAME="${{ github.ref_name }}"
+          else
+            TAG_NAME="v${VERSION}-${COMMIT_HASH}"
+          fi
+          
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+          echo "date=${DATE_STR}" >> $GITHUB_OUTPUT
+          echo "commit_msg=${COMMIT_MSG}" >> $GITHUB_OUTPUT
+
+      - name: Generate Release Body
+        id: release_notes
+        run: |
+          cat << 'EOF' > release_body.md
+          ## 🎓 ExamGuard Desktop Application Release
+
+          ### 📦 Platform Downloads Available:
+          | Platform | Package Type | Direct Asset |
+          |:---|:---|:---|
+          | 🐧 **Linux** | Universal Portable | `ExamGuard-*.AppImage` |
+          | 🐧 **Linux** | Debian / Ubuntu Installer | `ExamGuard_*_amd64.deb` |
+          | 🪟 **Windows** | Setup Installer | `ExamGuard-Setup-*.exe` |
+          | 🪟 **Windows** | Portable Zip | `ExamGuard-*-win.zip` |
+          | 🍏 **macOS** | Disk Image Installer | `ExamGuard-*.dmg` |
+          | 🍏 **macOS** | Portable Zip | `ExamGuard-*-mac.zip` |
+
+          ---
+
+          ### 🚀 What's New & System Capabilities:
+          - **Dual-Head YOLO11s Detection Engine**: High-capacity threat engine (phones, laptops, calculators, smartwatches, books, bags) paired with precision exam stationery engine (`best.pt`).
+          - **Exam Hall Item Permissions & Policy Controls**: Real-time policy switcher with 4 standard presets (Standard, Engineering, Open-Book, Lab) and individual item toggles.
+          - **Candidate Absence Guard**: Intelligent empty desk detection with configurable grace period and automatic incident recording.
+          - **Real-Time Scanner Control**: Instant Pause/Resume AI scanner button directly on the video feed toolbar.
+          - **Auto-Update System**: In-app desktop notification popup whenever a new GitHub release is published.
+
+          ---
+          **Commit:** `${{ steps.meta.outputs.commit_msg }}` (`${{ github.sha }}`)
+          EOF
+
+      - name: Publish Release to GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag_name }}
+          name: "ExamGuard ${{ steps.meta.outputs.tag_name }} - AI Exam Monitoring (${{ steps.meta.outputs.date }})"
+          body_path: release_body.md
+          files: |
+            dist-release/*.AppImage
+            dist-release/*.deb
+            dist-release/*.exe
+            dist-release/*.dmg
+            dist-release/*.zip
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

@@ -119,6 +119,62 @@ class AlertManager:
 
         cv2.imwrite(str(filepath), evidence)
 
+    def trigger_custom_alert(
+        self,
+        frame: np.ndarray,
+        camera_id: str,
+        class_name: str,
+        label: str,
+        severity: str = "HIGH",
+        confidence: float = 0.95,
+        bbox: Optional[List[int]] = None,
+        notes: str = ""
+    ) -> Optional[Dict[str, Any]]:
+        """Directly triggers and records a custom anomaly alert (e.g. Candidate Absence)."""
+        now = time.time()
+        last_time = self.cooldown_tracker.get(class_name, 0.0)
+        if now - last_time < ALERT_COOLDOWN_SECONDS:
+            return None
+        self.cooldown_tracker[class_name] = now
+
+        h, w = frame.shape[:2]
+        if bbox is None:
+            bbox = [10, 10, w - 10, h - 10]
+
+        timestamp_str = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        short_id = uuid.uuid4().hex[:6].upper()
+        alert_id = f"ALT-{timestamp_str}-{short_id}"
+
+        evidence_filename = f"{alert_id}.jpg"
+        evidence_path = EVIDENCE_DIR / evidence_filename
+
+        det = {
+            "bbox": bbox,
+            "color": (0, 0, 255) if severity == "HIGH" else (0, 165, 255),
+            "label": label,
+            "confidence": confidence,
+            "class_name": class_name
+        }
+        self._save_evidence(frame, det, evidence_path, alert_id)
+
+        alert_record = {
+            "alert_id": alert_id,
+            "timestamp": datetime.datetime.now().isoformat(),
+            "camera_id": camera_id,
+            "object_class": class_name,
+            "object_label": label,
+            "confidence": confidence,
+            "severity": severity,
+            "track_id": None,
+            "bbox": bbox,
+            "evidence_path": f"evidence/{evidence_filename}",
+            "review_status": "PENDING",
+            "invigilator_notes": notes
+        }
+        db.insert_alert(alert_record)
+        print(f"[ExamGuard Alert] [!] {severity} ALERT: {label} (Conf: {int(confidence*100)}%) | ID: {alert_id}")
+        return alert_record
+
 # Singleton instance
 alert_manager = AlertManager()
 

@@ -1,0 +1,76 @@
+{
+  "name": "examguard",
+  "version": "1.0.0",
+  "description": "ExamGuard - AI-Based Exam Environment Monitoring System",
+  "main": "electron/main.js",
+  "author": "Shadab Arzoo",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Shadab-Arzoo/AI_CLASSROOM.git"
+  },
+  "scripts": {
+    "start": "electron electron/main.js",
+    "build:all": "electron-builder -mwl",
+    "build:linux": "electron-builder --linux",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:dir": "electron-builder --dir"
+  },
+  "build": {
+    "appId": "com.examguard.app",
+    "productName": "ExamGuard",
+    "directories": {
+      "output": "release"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Shadab-Arzoo",
+        "repo": "AI_CLASSROOM"
+      }
+    ],
+    "files": [
+      "electron/**/*",
+      "frontend/**/*",
+      "src/**/*",
+      "models/**/*",
+      "run.py",
+      "requirements.txt",
+      "package.json"
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Education"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.education"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  },
+  "devDependencies": {
+    "electron": "^34.2.0",
+    "electron-builder": "^25.1.8"
+  }
+}

@@ -28,6 +28,7 @@ class VideoStreamManager:
         self.current_fps = 0.0
         self.total_frames_processed = 0
         self.is_tracking_enabled = True
+        self.is_scanner_active = True  # Can be paused to stop detections/alerts
         self.confidence_threshold = DEFAULT_CONF_THRESHOLD
 
     def start_source(self, source: Optional[str] = None):
@@ -128,6 +129,32 @@ class VideoStreamManager:
                 current_fps = 1.0 / elapsed
                 self.current_fps = fps_smoothing * self.current_fps + (1 - fps_smoothing) * current_fps
 
+            # If scanner is paused, bypass AI detection completely (0% CPU, no new alerts)
+            if not self.is_scanner_active:
+                display_frame = frame.copy()
+                h, w = display_frame.shape[:2]
+                cv2.rectangle(display_frame, (0, 0), (w, 32), (15, 15, 15), -1)
+                hud_text = f"CAM: {self.camera_id} | [PAUSED] AI SCANNER INACTIVE | FPS: {int(self.current_fps)}"
+                cv2.putText(display_frame, hud_text, (10, 22), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 165, 255), 1, cv2.LINE_AA)
+
+                # Center paused overlay pill
+                pw, ph = 260, 36
+                px1 = (w - pw) // 2
+                py1 = 44
+                overlay = display_frame.copy()
+                cv2.rectangle(overlay, (px1, py1), (px1 + pw, py1 + ph), (25, 25, 25), -1)
+                cv2.addWeighted(overlay, 0.85, display_frame, 0.15, 0, display_frame)
+                cv2.rectangle(display_frame, (px1, py1), (px1 + pw, py1 + ph), (0, 165, 255), 1)
+                cv2.putText(display_frame, "AI SCANNER PAUSED", (px1 + 42, py1 + 24), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 165, 255), 2, cv2.LINE_AA)
+
+                self.total_frames_processed += 1
+                ret, jpeg = cv2.imencode('.jpg', display_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 75])
+                time.sleep(0.04)  # ~25 FPS when paused
+                if ret:
+                    yield (b'--frame\r\n'
+                           b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
+                continue
+
             # Process frame with tracking and alerts
             if self.is_tracking_enabled:
                 result = self.tracker.track_frame(
@@ -144,7 +171,14 @@ class VideoStreamManager:
             h, w = display_frame.shape[:2]
             cv2.rectangle(display_frame, (0, 0), (w, 32), (15, 15, 15), -1)
             hud_text = f"CAM: {self.camera_id} | FPS: {int(self.current_fps)} | MODEL: {'Custom' if self.detector.is_custom_model else 'Pretrained'} | CONF: {int(self.confidence_threshold * 100)}%"
-            cv2.putText(display_frame, hud_text, (10, 22), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 200), 1, cv2.LINE_AA)
+            if getattr(self.tracker, "absence_enabled", False):
+                if getattr(self.tracker, "is_absent", False):
+                    hud_text += f" | CANDIDATE: ABSENT ({self.tracker.absence_duration:.0f}s)"
+                elif getattr(self.tracker, "last_person_count", 0) > 0:
+                    hud_text += " | CANDIDATE: PRESENT"
+                else:
+                    hud_text += f" | CANDIDATE: GRACE ({self.tracker.absence_duration:.0f}s)"
+            cv2.putText(display_frame, hud_text, (10, 22), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 200), 1, cv2.LINE_AA)
 
             self.total_frames_processed += 1
 

@@ -676,6 +676,123 @@
             box-shadow: 0 0 8px rgba(63, 214, 198, 0.5);
         }
 
+        /* ── Candidate Absence Banner ── */
+        .absence-banner {
+            margin-top: 12px;
+            padding: 12px 18px;
+            border-radius: var(--dp-r-panel);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.45);
+            box-shadow: 0 0 25px -4px rgba(239, 68, 68, 0.35);
+            animation: absencePulse 1.8s infinite ease-in-out;
+            transition: all 0.3s ease;
+        }
+        .absence-banner.grace {
+            background: rgba(245, 158, 11, 0.12);
+            border-color: rgba(245, 158, 11, 0.45);
+            box-shadow: 0 0 20px -4px rgba(245, 158, 11, 0.3);
+            animation: none;
+        }
+        @keyframes absencePulse {
+            0%, 100% { box-shadow: 0 0 16px rgba(239, 68, 68, 0.25); border-color: rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 32px rgba(239, 68, 68, 0.6); border-color: rgba(239, 68, 68, 0.85); }
+        }
+        .absence-banner-l {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .absence-indicator {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .absence-banner.grace .absence-indicator {
+            background: rgba(245, 158, 11, 0.25);
+        }
+        .absence-indicator .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+        }
+        .absence-banner.grace .absence-indicator .dot {
+            background: #f59e0b;
+            box-shadow: 0 0 8px #f59e0b;
+        }
+        .absence-heading {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: #fca5a5;
+            text-transform: uppercase;
+        }
+        .absence-banner.grace .absence-heading {
+            color: #fcd34d;
+        }
+        .absence-sub {
+            font-size: 12px;
+            color: var(--dp-color-read);
+            margin-top: 2px;
+        }
+        .absence-sub strong {
+            font-family: var(--dp-mono);
+            color: #fff;
+        }
+        .absence-action-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--dp-color-bright);
+            padding: 6px 14px;
+            border-radius: var(--dp-r-pill);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .absence-action-btn:hover {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Scanner Pause / Resume Button */
+        .btn-pause-scanner {
+            border-color: rgba(63, 214, 198, 0.35);
+            background: rgba(63, 214, 198, 0.04);
+            color: var(--dp-color-bright);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-pause-scanner:hover {
+            border-color: var(--dp-color-bright);
+            background: rgba(63, 214, 198, 0.12);
+            color: #fff;
+        }
+        .btn-pause-scanner.paused {
+            background: rgba(245, 158, 11, 0.16);
+            border-color: rgba(245, 158, 11, 0.65);
+            color: #fcd34d;
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.25);
+        }
+        .btn-pause-scanner.paused:hover {
+            background: rgba(245, 158, 11, 0.25);
+            border-color: #f59e0b;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+        }
+
         /* Protocol notice */
         .notice {
             padding: 14px 20px;
@@ -1769,6 +1886,9 @@
                             <i class="ph ph-upload"></i><span>Upload Video</span>
                             <input type="file" id="videoUploadInput" accept="video/mp4,video/avi" onchange="uploadVideoFile(this)">
                         </label>
+                        <button id="scannerPauseBtn" onclick="toggleScannerPause()" class="btn btn-pause-scanner" title="Pause or resume live AI scanning and alert generation">
+                            <i class="ph-bold ph-pause" id="scannerPauseIcon"></i><span id="scannerPauseBtnText">Pause Scanner</span>
+                        </button>
                     </div>
 
                     <div class="slider-g">
@@ -1782,6 +1902,28 @@
                         <div class="tog-track"></div>
                         <span>ByteTrack</span>
                     </label>
+
+                    <label class="tog" id="absenceToggleWrap" title="Flag candidate absence if desk is empty for >5s">
+                        <input type="checkbox" id="absenceToggle" onchange="toggleAbsenceMonitor(this.checked)">
+                        <div class="tog-track"></div>
+                        <span id="absenceToggleLabel"><i class="ph-bold ph-user-focus"></i> Absence Guard</span>
+                    </label>
+                </div>
+
+                <!-- Candidate Absence Notification Banner -->
+                <div class="absence-banner" id="absenceBanner" style="display: none;">
+                    <div class="absence-banner-l">
+                        <span class="absence-indicator" id="absenceIndicator"><span class="dot"></span></span>
+                        <div>
+                            <div class="absence-heading" id="absenceBannerTitle">CANDIDATE ABSENCE DETECTED</div>
+                            <div class="absence-sub" id="absenceBannerDesc">Candidate has left the desk. Duration: <strong id="absenceDurationVal">0.0s</strong> (Grace limit: 5.0s)</div>
+                        </div>
+                    </div>
+                    <div class="absence-banner-r">
+                        <button class="absence-action-btn" onclick="toggleAbsenceMonitor(false)" title="Pause absence detection">
+                            <i class="ph-bold ph-pause"></i> Pause Monitor
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -2043,8 +2185,110 @@
             if (data.is_custom_model) {
                 document.getElementById('modelTypeBadge').innerText = "Custom Exam Stationery";
             }
+
+            if (data.is_scanner_active !== undefined) {
+                updateScannerUI(data.is_scanner_active);
+            }
+
+            // Candidate Absence status sync
+            const absenceToggle = document.getElementById('absenceToggle');
+            const absenceBanner = document.getElementById('absenceBanner');
+            const absenceBannerTitle = document.getElementById('absenceBannerTitle');
+            const absenceBannerDesc = document.getElementById('absenceBannerDesc');
+            
+            if (absenceToggle && data.absence_monitor_enabled !== undefined) {
+                absenceToggle.checked = Boolean(data.absence_monitor_enabled);
+            }
+
+            if (absenceBanner) {
+                if (data.absence_monitor_enabled) {
+                    if (data.is_candidate_absent) {
+                        absenceBanner.classList.remove('grace');
+                        if (absenceBannerTitle) absenceBannerTitle.innerText = "CRITICAL: CANDIDATE ABSENCE DETECTED";
+                        if (absenceBannerDesc) absenceBannerDesc.innerHTML = `Candidate has left the desk. Duration: <strong>${(data.absence_duration || 0).toFixed(1)}s</strong> (Grace limit: 5.0s)`;
+                        absenceBanner.style.display = "flex";
+                    } else if (data.person_count === 0 && (data.absence_duration || 0) > 1.0) {
+                        absenceBanner.classList.add('grace');
+                        const remaining = Math.max(0, 5.0 - (data.absence_duration || 0)).toFixed(1);
+                        if (absenceBannerTitle) absenceBannerTitle.innerText = "CANDIDATE NOT DETECTED (GRACE PERIOD)";
+                        if (absenceBannerDesc) absenceBannerDesc.innerHTML = `Desk empty for ${(data.absence_duration || 0).toFixed(1)}s. Alert triggers in <strong>${remaining}s</strong>`;
+                        absenceBanner.style.display = "flex";
+                    } else {
+                        absenceBanner.style.display = "none";
+                    }
+                } else {
+                    absenceBanner.style.display = "none";
+                }
+            }
         } catch (e) {
             console.error("Failed to fetch status", e);
+        }
+    }
+
+    /* Candidate Absence Monitoring Toggle */
+    async function toggleAbsenceMonitor(enabled) {
+        try {
+            const res = await fetch('/api/absence-monitor/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled: enabled })
+            });
+            const data = await res.json();
+            const chk = document.getElementById('absenceToggle');
+            if (chk) chk.checked = Boolean(data.enabled);
+            
+            if (data.enabled) {
+                showToast("Absence Guard ACTIVE", "Monitoring candidate presence (5.0s grace period).", "success");
+            } else {
+                showToast("Absence Guard PAUSED", "Candidate absence alerts temporarily disabled.", "info");
+                const banner = document.getElementById('absenceBanner');
+                if (banner) banner.style.display = "none";
+            }
+        } catch (e) {
+            console.error("Failed to toggle absence monitor", e);
+            showToast("Network Error", "Could not toggle absence monitor.", "warning");
+        }
+    }
+
+    let isScannerActive = true;
+
+    function updateScannerUI(active) {
+        isScannerActive = active;
+        const btn = document.getElementById('scannerPauseBtn');
+        const icon = document.getElementById('scannerPauseIcon');
+        const label = document.getElementById('scannerPauseBtnText');
+        if (!btn || !icon || !label) return;
+
+        if (active) {
+            btn.classList.remove('paused');
+            icon.className = 'ph-bold ph-pause';
+            label.innerText = 'Pause Scanner';
+            btn.title = 'Pause AI scanning and alert generation';
+        } else {
+            btn.classList.add('paused');
+            icon.className = 'ph-bold ph-play';
+            label.innerText = 'Resume Scanner';
+            btn.title = 'Resume real-time AI scanning';
+        }
+    }
+
+    /* Pause / Resume Scanner Toggle */
+    async function toggleScannerPause() {
+        try {
+            const res = await fetch('/api/scanner/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await res.json();
+            updateScannerUI(data.is_scanner_active);
+            if (data.is_scanner_active) {
+                showToast("Scanner Resumed", "Live AI object scanning and detection active.", "success");
+            } else {
+                showToast("Scanner Paused", "AI scanning and alert generation frozen.", "warning");
+            }
+        } catch (e) {
+            console.error("Failed to toggle scanner pause", e);
+            showToast("Network Error", "Could not toggle scanner state.", "warning");
         }
     }
 

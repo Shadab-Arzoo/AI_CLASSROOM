@@ -54,6 +54,10 @@ class ControlRequest(BaseModel):
     camera_id: Optional[str] = None
     confidence_threshold: Optional[float] = None
     enable_tracking: Optional[bool] = None
+    is_scanner_active: Optional[bool] = None
+
+class ScannerToggleRequest(BaseModel):
+    active: Optional[bool] = None
 
 class PresetRequest(BaseModel):
     preset: str
@@ -62,6 +66,10 @@ class PolicyToggleRequest(BaseModel):
     item: str
     field: str  # 'allowed' or 'enabled'
     value: bool
+
+class AbsenceToggleRequest(BaseModel):
+    enabled: Optional[bool] = None
+    grace_seconds: Optional[float] = None
 
 # --- API ENDPOINTS ---
 
@@ -81,9 +89,61 @@ def get_system_status():
         "confidence_threshold": stream_manager.confidence_threshold,
         "tracking_enabled": stream_manager.is_tracking_enabled,
         "frames_processed": stream_manager.total_frames_processed,
+        "is_scanner_active": stream_manager.is_scanner_active,
         "active_preset": policy_manager.active_preset_id,
         "active_preset_name": policy_state["active_preset_name"],
-        "active_preset_badge": policy_state["active_preset_badge"]
+        "active_preset_badge": policy_state["active_preset_badge"],
+        "absence_monitor_enabled": getattr(tracker, "absence_enabled", False),
+        "is_candidate_absent": getattr(tracker, "is_absent", False),
+        "absence_duration": round(getattr(tracker, "absence_duration", 0.0), 1),
+        "person_count": getattr(tracker, "last_person_count", 0),
+    }
+
+@app.post("/api/scanner/toggle")
+def toggle_scanner(req: Optional[ScannerToggleRequest] = None):
+    """Pause or resume real-time AI object scanning and anomaly alert generation."""
+    if req and req.active is not None:
+        stream_manager.is_scanner_active = req.active
+    else:
+        stream_manager.is_scanner_active = not stream_manager.is_scanner_active
+
+    state_str = "ACTIVE (Scanning)" if stream_manager.is_scanner_active else "PAUSED (Frozen)"
+    return {
+        "status": "SUCCESS",
+        "is_scanner_active": stream_manager.is_scanner_active,
+        "message": f"AI Scanner is now {state_str}."
+    }
+
+@app.get("/api/absence-monitor")
+def get_absence_monitor_status():
+    """Retrieve current candidate absence monitoring state."""
+    return {
+        "enabled": tracker.absence_enabled,
+        "grace_seconds": tracker.absence_grace_seconds,
+        "is_absent": tracker.is_absent,
+        "absence_duration": round(tracker.absence_duration, 1),
+        "person_count": tracker.last_person_count
+    }
+
+@app.post("/api/absence-monitor/toggle")
+def toggle_absence_monitor(req: Optional[AbsenceToggleRequest] = None):
+    """Toggle candidate absence monitoring on/off or configure grace period."""
+    if req and req.enabled is not None:
+        tracker.absence_enabled = req.enabled
+    else:
+        tracker.absence_enabled = not tracker.absence_enabled
+
+    if req and req.grace_seconds is not None and req.grace_seconds > 0:
+        tracker.absence_grace_seconds = req.grace_seconds
+
+    return {
+        "status": "SUCCESS",
+        "enabled": tracker.absence_enabled,
+        "grace_seconds": tracker.absence_grace_seconds,
+        "is_absent": tracker.is_absent,
+        "absence_duration": round(tracker.absence_duration, 1),
+        "person_count": tracker.last_person_count,
+        "message": f"Candidate Absence Monitor is now {'ACTIVE' if tracker.absence_enabled else 'PAUSED'}."
     }
 
 @app.get("/api/policy")
